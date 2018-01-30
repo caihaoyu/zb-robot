@@ -8,12 +8,13 @@ import sys
 import urllib.request
 
 
-class zb_api:
+class ZBAPI(object):
 
-    def __init__(self, mykey, mysecret):
+    def __init__(self, mykey, mysecret, market):
         self.mykey = mykey
         self.mysecret = mysecret
         self.jm = ''
+        self.market = market
 
     def __fill(self, value, lenght, fillByte):
         if len(value) >= lenght:
@@ -49,7 +50,6 @@ class zb_api:
 
     def __digest(self, aValue):
         value = struct.pack("%ds" % len(aValue), aValue.encode('utf-8'))
-        print(value)
         h = hashlib.sha1()
         h.update(value)
         dg = h.hexdigest()
@@ -74,7 +74,8 @@ class zb_api:
             print(sys.stderr, 'zb request ex: ', ex)
             return None
 
-    def __data_api_call(self, path, params, base_url='https://trade.zb.com/api/'):
+    def __data_api_call(self, path, params,
+                        base_url='https://trade.zb.com/api/'):
         pass
 
     def query_account(self):
@@ -89,8 +90,8 @@ class zb_api:
             print(sys.stderr, 'zb query_account exception,', ex)
             return None
 
-    def get_kline(self, market, time_range="5min"):
-        params = f"market={market}&type={time_range}"
+    def get_kline(self, market, time_range="15min"):
+        params = f"market={market}&type={time_range}&since=1516075600000"
         path = "kline"
         base_url = "http://api.zb.com/data/v1/"
         obj = self.__api_call(path, params, base_url)
@@ -125,7 +126,7 @@ class zb_api:
 
 if __name__ == '__main__':
 
-    api = zb_api(access_key, access_secret)
+    api = ZBAPI(access_key, access_secret)
 
     # print(api.query_account())
     #
