@@ -5,6 +5,9 @@ import talib
 import numpy as np
 from zb_api import ZBAPI
 
+trading_pairs = 2
+
+BUY_VALUE = 25
 
 dca_percent = {
     1: -0.07,
@@ -36,20 +39,19 @@ class Monitor(object):
             'avg_price': 0,
             'dca': 0
         }
-        self.stats = 0
+        self.status = 0
 
     def watch(self):
         kline = None
-        if self.stats == 0:
-            kline = self.api.get_kline(market=self.market, time_range="5min")
-
         ticker = self.api.get_ticker(market=self.market)
-        print(ticker)
-
-        if kline:
-            opt, sell = self.check_buy(ticker, RSI(kline))
-            if opt:
-                self.buy(sell)
+        if self.status == 0:
+            kline = self.api.get_kline(market=self.market, time_range="5min")
+            if kline:
+                opt, sell = self.check_buy(ticker, RSI(kline))
+                if opt:
+                    self.buy(sell)
+        else:
+            self.check_sale(ticker)
 
     def follow_down(self, sell):
         lowest_sell = float(sell)
@@ -67,8 +69,8 @@ class Monitor(object):
                     if 0.01 >= percent >= 0.003:
                         close, rsi = RSI(
                             self.api.get_kline(market=self.market,
-                                               time_range="5min"))
-                        if rsi <= 25:
+                                               time_range="15min"))
+                        if rsi <= BUY_VALUE:
                             return True, sell
                         else:
                             return False, 0
@@ -79,46 +81,53 @@ class Monitor(object):
                 else:
                     lowest_sell = sell
 
-                time.sleep(5)
+                time.sleep(30)
             except Exception as ex:
                 print(ex)
-                time.sleep(5)
+                time.sleep(30)
 
     def check_sale(self, ticker):
-        pass
+        print(ticker)
 
     def check_buy(self, ticker, rsi_value=None):
         close, rsi = rsi_value
 
-        if rsi <= 25:
+        print(rsi)
+        if rsi <= BUY_VALUE:
             return self.follow_down(ticker['ticker']['sell'])
         else:
             return False, 0
 
-    def buy(self, ticker):
-        self.stats = 1
-        # count = amount // price
+    def buy(self, price, dca=0):
+        print('go_buy')
+        amount = float(trading_pairs) // price
 
-        # if count > 0:
-        #     base -= count * price
-        #     repo['avg_price'] = update_avg_price(repo, count, price)
-        #     repo['count'] += count
-
-        #     print('BUY:    {}'.format(int(count)))
-        #     print('PRICE:  {}'.format(price))
-        #     print('AMOUNT: {}'.format(count * price))
-        #     print('BASE:   {}'.format(base))
-        #     print('REPO:   {}'.format(repo))
+        print(f'buy_price:{price}')
+        print(f'buy_amount:{amount}')
+        order = self.api.order(self.market, price, amount, 1)
+        time.sleep(30)
+        if order['code'] == 1000:
+            order_detail = self.api.get_order(self.market, order['id'])
+            print(order_detail)
+            self.repo['count'] += order_detail['total_amount']
+            if order_detail['status'] == 2:
+                if dca == 0:
+                    self.repo['avg_price'] = float(
+                        order_detail['trade_money']) / self.repo['count']
+                self.status = 1
+            elif order_detail['status'] == 0:
+                pass
+            print(self.repo)
 
 
 if __name__ == '__main__':
 
-    monitor = Monitor('bts_usdt', '', '')
+    monitor = Monitor('btc_usdt', '', '')
 
     while True:
         try:
             monitor.watch()
-            time.sleep(5)
+            time.sleep(30)
         except Exception as ex:
             print(ex)
-            time.sleep(5)
+            time.sleep(30)

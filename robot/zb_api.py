@@ -5,12 +5,13 @@ import hashlib
 import struct
 import time
 import sys
+import os
 import urllib.request
 
 
 class ZBAPI(object):
 
-    def __init__(self, mykey, mysecret, market):
+    def __init__(self, mykey, mysecret, market=None):
         self.mykey = mykey
         self.mysecret = mysecret
         self.jm = ''
@@ -119,22 +120,23 @@ class ZBAPI(object):
 
     def get_order(self, currency, order_id):
         params = (f"accesskey={self.mykey}&currency={currency}"
-                  "&id={order_id}&method=getOrder")
+                  f"&id={order_id}&method=getOrder")
         path = "getOrder"
         return self.__api_call(path, params)
 
 
 if __name__ == '__main__':
 
-    api = ZBAPI(access_key, access_secret)
+    api = ZBAPI(os.environ['ZB_ACCESS_KEY'],
+                os.environ['ZB_SERECT_KEY'])
 
     # print(api.query_account())
     #
-    print(api.get_kline("bts_usdt", time_range="15min"))
+    # print(api.get_kline("bts_usdt", time_range="15min"))
     #
     # print(api.get_ticker("bts_usdt"))
 
-    # print(api.order("bts_usdt", 0.4127, 4, 1))
+    # print(api.order("bts_usdt", 0.35, 1, 1))
 
-    # print(api.get_order("bts_usdt", 201801295784546))
-    # print(api.cancel_order("bts_usdt", 201801295784546))
+    print(api.get_order("bts_usdt", 201802016223416))
+    # print(api.cancel_order("bts_usdt", 201802016224048))
