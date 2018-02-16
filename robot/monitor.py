@@ -7,7 +7,11 @@ from zb_api import ZBAPI
 
 trading_pairs = 2
 
-BUY_VALUE = 25
+ALL_TRAILING_BUY = 0.001
+
+TRAILING_BUY_LIMT = 1
+
+BUY_VALUE = 100
 
 dca_percent = {
     1: -0.07,
@@ -59,6 +63,7 @@ class Monitor(object):
 
         while True:
             try:
+                time.sleep(30)
                 ticker = self.api.get_ticker(market=self.market)
                 sell = float(ticker['ticker']['sell'])
                 percent = (sell - lowest_sell) / lowest_sell
@@ -66,7 +71,7 @@ class Monitor(object):
                 print(lowest_sell, sell)
 
                 if sell > lowest_sell:
-                    if 0.01 >= percent >= 0.003:
+                    if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
                         close, rsi = RSI(
                             self.api.get_kline(market=self.market,
                                                time_range="15min"))
@@ -74,14 +79,13 @@ class Monitor(object):
                             return True, sell
                         else:
                             return False, 0
-                    elif percent > 0.01:
+                    elif percent > TRAILING_BUY_LIMT:
                         return False, 0
                     else:
                         continue
                 else:
                     lowest_sell = sell
 
-                time.sleep(30)
             except Exception as ex:
                 print(ex)
                 time.sleep(30)
@@ -122,7 +126,7 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    monitor = Monitor('btc_usdt', '', '')
+    monitor = Monitor('zb_usdt', '', '')
 
     while True:
         try:
