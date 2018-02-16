@@ -9,9 +9,13 @@ trading_pairs = 2
 
 ALL_TRAILING_BUY = 0.001
 
+ALL_TRAILING_SELL = 0.0001
+
 TRAILING_BUY_LIMT = 1
 
 BUY_VALUE = 100
+
+SELL_VALUE = 0.01
 
 dca_percent = {
     1: -0.07,
@@ -31,19 +35,23 @@ def RSI(kline=None):
 
 class Monitor(object):
 
-    def __init__(self, market, buy_strategy, sell_strategy):
+    def __init__(self, market, buy_strategy, sell_strategy, repo=None):
         self.market = market
         self.buy_strategy = buy_strategy
         self.sell_strategy = sell_strategy
         self.api = ZBAPI(os.environ['ZB_ACCESS_KEY'],
                          os.environ['ZB_SERECT_KEY'],
                          market)
-        self.repo = {
-            'count': 0,
-            'avg_price': 0,
-            'dca': 0
-        }
-        self.status = 0
+        if repo is None:
+            self.repo = {
+                'count': 0,
+                'avg_price': 0,
+                'dca': 0
+            }
+            self.status = 0
+        else:
+            self.repo = repo
+            self.status = 1
 
     def watch(self):
         kline = None
@@ -51,13 +59,41 @@ class Monitor(object):
         if self.status == 0:
             kline = self.api.get_kline(market=self.market, time_range="5min")
             if kline:
-                opt, sell = self.check_buy(ticker, RSI(kline))
+                opt, buy = self.check_buy(ticker, RSI(kline))
                 if opt:
-                    self.buy(sell)
+                    self.buy(buy)
         else:
-            self.check_sale(ticker)
+            opt, sell = self.check_sale(ticker)
+            if opt:
+                self.sell(sell)
+
+    def follow_up(self, buy, high_profit):
+        cost = self.repo['avg_price']
+        while True:
+            try:
+                time.sleep(30)
+                ticker = self.api.get_ticker(market=self.market)
+                buy = float(ticker['ticker']['buy'])
+                profit = (buy - cost) / cost
+                profit_diff = high_profit - profit
+
+                print(f'profit:{profit},\nprofit_diff:{profit_diff}\n,high_profit:{high_profit}')
+
+                if profit < SELL_VALUE:
+                    return False, 0
+                else:
+                    if profit_diff < 0:
+                        high_profit = profit
+                    elif profit_diff >= ALL_TRAILING_SELL:
+                        print('go sell')
+                        return True, buy
+
+            except Exception as ex:
+                print(ex)
+                time.sleep(30)
 
     def follow_down(self, sell):
+
         lowest_sell = float(sell)
         # current_rsi = rsi
 
@@ -91,7 +127,14 @@ class Monitor(object):
                 time.sleep(30)
 
     def check_sale(self, ticker):
-        print(ticker)
+        buy = float(ticker['ticker']['buy'])
+        cost = self.repo['avg_price']
+        profit = (buy - cost) / cost
+        print(profit)
+        if profit >= SELL_VALUE:
+            return self.follow_up(buy, profit)
+        else:
+            return False, 0
 
     def check_buy(self, ticker, rsi_value=None):
         close, rsi = rsi_value
@@ -123,10 +166,26 @@ class Monitor(object):
                 pass
             print(self.repo)
 
+    def sell(self, price):
+        amount = self.repo['count']
+        print(f'sell_price:{price}')
+        print(f'sell_amount:{amount}')
+        order = self.api.order(self.market, price, amount, 0)
+        time.sleep(30)
+        if order['code'] == 1000:
+            order_detail = self.api.get_order(self.market, order['id'])
+            print(order_detail)
+            if order_detail['status'] == 2:
+                self.status = 0
+            elif order_detail['status'] == 0:
+                pass
+
+
 
 if __name__ == '__main__':
 
-    monitor = Monitor('zb_usdt', '', '')
+    repo = {'count': 1.0, 'avg_price': 1.1211, 'dca': 0}
+    monitor = Monitor('zb_usdt', '', '', repo)
 
     while True:
         try:
