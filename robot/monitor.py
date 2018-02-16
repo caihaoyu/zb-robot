@@ -33,6 +33,14 @@ def RSI(kline=None):
     return closes[-1], rsi[-1]
 
 
+def init_repo():
+    return {
+        'count': 0,
+        'avg_price': 0,
+        'dca': 0
+    }
+
+
 class Monitor(object):
 
     def __init__(self, market, buy_strategy, sell_strategy, repo=None):
@@ -43,11 +51,7 @@ class Monitor(object):
                          os.environ['ZB_SERECT_KEY'],
                          market)
         if repo is None:
-            self.repo = {
-                'count': 0,
-                'avg_price': 0,
-                'dca': 0
-            }
+            self.repo = init_repo()
             self.status = 0
         else:
             self.repo = repo
@@ -77,7 +81,7 @@ class Monitor(object):
                 profit = (buy - cost) / cost
                 profit_diff = high_profit - profit
 
-                print(f'profit:{profit},\nprofit_diff:{profit_diff}\n,high_profit:{high_profit}')
+                print(f'profit:{profit},\nprofit_diff:{profit_diff},\nhigh_profit:{high_profit}')
 
                 if profit < SELL_VALUE:
                     return False, 0
@@ -130,7 +134,7 @@ class Monitor(object):
         buy = float(ticker['ticker']['buy'])
         cost = self.repo['avg_price']
         profit = (buy - cost) / cost
-        print(profit)
+        print(f'profit:{round(profit*100, 2)}%')
         if profit >= SELL_VALUE:
             return self.follow_up(buy, profit)
         else:
@@ -171,20 +175,21 @@ class Monitor(object):
         print(f'sell_price:{price}')
         print(f'sell_amount:{amount}')
         order = self.api.order(self.market, price, amount, 0)
+        print(order)
         time.sleep(30)
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
             print(order_detail)
             if order_detail['status'] == 2:
                 self.status = 0
+                self.repo = init_repo()
             elif order_detail['status'] == 0:
                 pass
 
 
-
 if __name__ == '__main__':
 
-    repo = {'count': 1.0, 'avg_price': 1.1211, 'dca': 0}
+    repo = {'count': 1.0, 'avg_price': 1.1473, 'dca': 0}
     monitor = Monitor('zb_usdt', '', '', repo)
 
     while True:
