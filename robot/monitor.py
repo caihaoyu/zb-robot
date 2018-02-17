@@ -13,14 +13,14 @@ ALL_TRAILING_SELL = 0.0001
 
 TRAILING_BUY_LIMT = 1
 
-BUY_VALUE = 100
+BUY_VALUE = 50
 
 SELL_VALUE = 0.01
 
 dca_percent = {
-    1: -0.07,
-    2: -0.1,
-    3: -0.24
+    0: -0.001,
+    1: -0.1,
+    2: -0.24
 }
 
 
@@ -65,10 +65,12 @@ class Monitor(object):
             if kline:
                 opt, buy = self.check_buy(ticker, RSI(kline))
                 if opt:
+                    time.sleep(1)
                     self.buy(buy)
         else:
             opt, sell = self.check_sale(ticker)
             if opt:
+                time.sleep(1)
                 self.sell(sell)
 
     def follow_up(self, buy, high_profit):
@@ -96,7 +98,7 @@ class Monitor(object):
                 print(ex)
                 time.sleep(30)
 
-    def follow_down(self, sell):
+    def follow_down(self, sell, isdca=False):
 
         lowest_sell = float(sell)
         # current_rsi = rsi
@@ -110,7 +112,7 @@ class Monitor(object):
 
                 print(lowest_sell, sell)
 
-                if sell > lowest_sell:
+                if sell > lowest_sell and isdca is False:
                     if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
                         close, rsi = RSI(
                             self.api.get_kline(market=self.market,
@@ -123,6 +125,16 @@ class Monitor(object):
                         return False, 0
                     else:
                         continue
+                elif isdca and sell > lowest_sell:
+                    dca = dca_percent[self.repo['dca']]
+                    cost = self.repo['avg_price']
+                    profit = (sell - cost) / cost
+                    if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
+                        if profit <= dca:
+                            return True, sell
+                        else:
+                            return False, 0
+
                 else:
                     lowest_sell = sell
 
@@ -132,11 +144,20 @@ class Monitor(object):
 
     def check_sale(self, ticker):
         buy = float(ticker['ticker']['buy'])
+        sell = float(ticker['ticker']['sell'])
+        dca = dca_percent[self.repo['dca']]
         cost = self.repo['avg_price']
         profit = (buy - cost) / cost
         print(f'profit:{round(profit*100, 2)}%')
         if profit >= SELL_VALUE:
             return self.follow_up(buy, profit)
+        elif profit <= dca:
+            print('go dca')
+            opt, sell = self.follow_down(sell, isdca=True)
+            if opt:
+                time.sleep(1)
+                self.buy(sell, isdca=True)
+                return False, 0
         else:
             return False, 0
 
@@ -149,9 +170,12 @@ class Monitor(object):
         else:
             return False, 0
 
-    def buy(self, price, dca=0):
+    def buy(self, price, isdca=False):
         print('go_buy')
-        amount = float(trading_pairs) // price
+        if isdca:
+            amount = (self.repo['avg_price'] * self.repo['count']) // price
+        else:
+            amount = float(trading_pairs) // price
 
         print(f'buy_price:{price}')
         print(f'buy_amount:{amount}')
@@ -162,9 +186,14 @@ class Monitor(object):
             print(order_detail)
             self.repo['count'] += order_detail['total_amount']
             if order_detail['status'] == 2:
-                if dca == 0:
+                if isdca is False:
                     self.repo['avg_price'] = float(
                         order_detail['trade_money']) / self.repo['count']
+                else:
+                    last_cost = self.repo['avg_price'] * self.repo['count']
+                    total_cost = float(order_detail['trade_money']) + last_cost
+                    self.repo['avg_price'] = total_cost / self.repo['count']
+                    self.repo['dca'] += 1
                 self.status = 1
             elif order_detail['status'] == 0:
                 pass
@@ -189,7 +218,8 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    repo = {'count': 1.0, 'avg_price': 1.1473, 'dca': 0}
+    repo = {'count': 1.0, 'avg_price': 1.158, 'dca': 0}
+    # repo = None
     monitor = Monitor('zb_usdt', '', '', repo)
 
     while True:
