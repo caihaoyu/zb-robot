@@ -5,20 +5,27 @@ import talib
 import numpy as np
 from zb_api import ZBAPI
 
+# 每次购买的比例
 trading_pairs = 2
 
-ALL_TRAILING_BUY = 0.001
+# 购买追价比例
+ALL_TRAILING_BUY = 0.00035
 
-ALL_TRAILING_SELL = 0.0001
+# 卖出追价比例
+ALL_TRAILING_SELL = 0.00035
 
+# 购买范围
 TRAILING_BUY_LIMT = 1
 
-BUY_VALUE = 50
+# 购买RSI值
+BUY_VALUE = 30
 
+# 卖出利润
 SELL_VALUE = 0.01
 
+# DCA范围
 dca_percent = {
-    0: -0.001,
+    0: -0.07,
     1: -0.1,
     2: -0.24
 }
@@ -83,7 +90,9 @@ class Monitor(object):
                 profit = (buy - cost) / cost
                 profit_diff = high_profit - profit
 
-                print(f'profit:{profit},\nprofit_diff:{profit_diff},\nhigh_profit:{high_profit}')
+                print(f'profit:{profit},\n'
+                      f'profit_diff:{profit_diff},\n'
+                      f'high_profit:{high_profit}')
 
                 if profit < SELL_VALUE:
                     return False, 0
@@ -173,9 +182,9 @@ class Monitor(object):
     def buy(self, price, isdca=False):
         print('go_buy')
         if isdca:
-            amount = (self.repo['avg_price'] * self.repo['count']) // price
+            amount = (self.repo['avg_price'] * self.repo['count']) / price
         else:
-            amount = float(trading_pairs) // price
+            amount = float(trading_pairs) / price
 
         print(f'buy_price:{price}')
         print(f'buy_amount:{amount}')
@@ -184,14 +193,15 @@ class Monitor(object):
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
             print(order_detail)
-            self.repo['count'] += order_detail['total_amount']
             if order_detail['status'] == 2:
                 if isdca is False:
+                    self.repo['count'] += order_detail['total_amount']
                     self.repo['avg_price'] = float(
                         order_detail['trade_money']) / self.repo['count']
                 else:
                     last_cost = self.repo['avg_price'] * self.repo['count']
                     total_cost = float(order_detail['trade_money']) + last_cost
+                    self.repo['count'] += order_detail['total_amount']
                     self.repo['avg_price'] = total_cost / self.repo['count']
                     self.repo['dca'] += 1
                 self.status = 1
@@ -218,8 +228,8 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    repo = {'count': 1.0, 'avg_price': 1.158, 'dca': 0}
-    # repo = None
+    # repo = {'count': 2.0, 'avg_price': 1.154, 'dca': 1}
+    repo = None
     monitor = Monitor('zb_usdt', '', '', repo)
 
     while True:
