@@ -12,7 +12,7 @@ trading_pairs = 2
 ALL_TRAILING_BUY = 0.00035
 
 # 卖出追价比例
-ALL_TRAILING_SELL = 0.00035
+ALL_TRAILING_SELL = 0.001
 
 # 购买范围
 TRAILING_BUY_LIMT = 1
@@ -21,7 +21,7 @@ TRAILING_BUY_LIMT = 1
 BUY_VALUE = 30
 
 # 卖出利润
-SELL_VALUE = 0.01
+SELL_VALUE = 0.5
 
 # DCA范围
 dca_percent = {
@@ -228,9 +228,9 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    # repo = {'count': 2.0, 'avg_price': 1.154, 'dca': 1}
-    repo = None
-    monitor = Monitor('zb_usdt', '', '', repo)
+    repo = {'count': 555.82, 'avg_price': 7.2, 'dca': 0}
+    # repo = None
+    monitor = Monitor('zb_qc', '', '', repo)
 
     while True:
         try:
