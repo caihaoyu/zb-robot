@@ -40,6 +40,10 @@ def RSI(kline=None):
     return closes[-1], rsi[-1]
 
 
+def calculate_profit(buy, cost):
+    return ((buy - cost) / cost) - 0.0004
+
+
 def init_repo():
     return {
         'count': 0,
@@ -87,7 +91,7 @@ class Monitor(object):
                 time.sleep(30)
                 ticker = self.api.get_ticker(market=self.market)
                 buy = float(ticker['ticker']['buy'])
-                profit = (buy - cost) / cost
+                profit = calculate_profit(buy, cost)
                 profit_diff = high_profit - profit
 
                 print(f'profit:{profit},\n'
@@ -137,7 +141,7 @@ class Monitor(object):
                 elif isdca and sell > lowest_sell:
                     dca = dca_percent[self.repo['dca']]
                     cost = self.repo['avg_price']
-                    profit = (sell - cost) / cost
+                    profit = calculate_profit(sell, cost)
                     if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
                         if profit <= dca:
                             return True, sell
@@ -156,7 +160,7 @@ class Monitor(object):
         sell = float(ticker['ticker']['sell'])
         dca = dca_percent[self.repo['dca']]
         cost = self.repo['avg_price']
-        profit = (buy - cost) / cost
+        profit = calculate_profit(buy, cost)
         print(f'profit:{round(profit*100, 2)}%')
         if profit >= SELL_VALUE:
             return self.follow_up(buy, profit)
@@ -166,6 +170,8 @@ class Monitor(object):
             if opt:
                 time.sleep(1)
                 self.buy(sell, isdca=True)
+                return False, 0
+            else:
                 return False, 0
         else:
             return False, 0
