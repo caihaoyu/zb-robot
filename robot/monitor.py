@@ -6,13 +6,13 @@ import numpy as np
 from zb_api import ZBAPI
 
 # 每次购买的比例
-trading_pairs = 2
+trading_pairs = 1000
 
 # 购买追价比例
-ALL_TRAILING_BUY = 0.00035
+ALL_TRAILING_BUY = 0.35 / 100
 
 # 卖出追价比例
-ALL_TRAILING_SELL = 0.001
+ALL_TRAILING_SELL = 0.35 / 100
 
 # 购买范围
 TRAILING_BUY_LIMT = 1
@@ -21,7 +21,7 @@ TRAILING_BUY_LIMT = 1
 BUY_VALUE = 30
 
 # 卖出利润
-SELL_VALUE = 0.5
+SELL_VALUE = 0.05
 
 # DCA范围
 dca_percent = {
@@ -37,7 +37,7 @@ def RSI(kline=None):
     closes = np.array(kline_data)[:, 4]
     rsi = talib.RSI(closes)
 
-    return closes[-1], rsi[-1]
+    return rsi[-1]
 
 
 def calculate_profit(buy, cost):
@@ -72,9 +72,10 @@ class Monitor(object):
         kline = None
         ticker = self.api.get_ticker(market=self.market)
         if self.status == 0:
+            time.sleep(1)
             kline = self.api.get_kline(market=self.market, time_range="5min")
             if kline:
-                opt, buy = self.check_buy(ticker, RSI(kline))
+                opt, buy = self.check_buy(ticker, kline=kline, strategy=RSI)
                 if opt:
                     time.sleep(1)
                     self.buy(buy)
@@ -111,7 +112,7 @@ class Monitor(object):
                 print(ex)
                 time.sleep(30)
 
-    def follow_down(self, sell, isdca=False):
+    def follow_down(self, sell, strategy, isdca=False):
 
         lowest_sell = float(sell)
         # current_rsi = rsi
@@ -127,10 +128,10 @@ class Monitor(object):
 
                 if sell > lowest_sell and isdca is False:
                     if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
-                        close, rsi = RSI(
+                        strategy_value = RSI(
                             self.api.get_kline(market=self.market,
                                                time_range="15min"))
-                        if rsi <= BUY_VALUE:
+                        if strategy_value <= BUY_VALUE:
                             return True, sell
                         else:
                             return False, 0
@@ -176,12 +177,13 @@ class Monitor(object):
         else:
             return False, 0
 
-    def check_buy(self, ticker, rsi_value=None):
-        close, rsi = rsi_value
+    def check_buy(self, ticker, kline, strategy):
+        strategy_value = strategy(kline)
 
-        print(rsi)
-        if rsi <= BUY_VALUE:
-            return self.follow_down(ticker['ticker']['sell'])
+        print(strategy_value)
+        if strategy_value <= BUY_VALUE:
+            return self.follow_down(ticker['ticker']['sell'],
+                                    strategy=strategy)
         else:
             return False, 0
 
@@ -234,9 +236,9 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    repo = {'count': 555.82, 'avg_price': 7.2, 'dca': 0}
-    # repo = None
-    monitor = Monitor('zb_qc', '', '', repo)
+    # repo = {'count': 518.62, 'avg_price': 7.712, 'dca': 0}
+    repo = None
+    monitor = Monitor('eos_qc', '', '', repo)
 
     while True:
         try:
