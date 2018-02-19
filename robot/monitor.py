@@ -15,7 +15,7 @@ ALL_TRAILING_BUY = 0.35 / 100
 ALL_TRAILING_SELL = 0.35 / 100
 
 # 购买范围
-TRAILING_BUY_LIMT = 1
+TRAILING_BUY_LIMT = 1 / 100
 
 # 购买RSI值
 BUY_VALUE = 30
@@ -40,6 +40,9 @@ def RSI(kline=None):
     return rsi[-1]
 
 
+BUY_STRATEGY_MAP = {'rsi': RSI}
+
+
 def calculate_profit(buy, cost):
     return ((buy - cost) / cost) - 0.0004
 
@@ -54,9 +57,10 @@ def init_repo():
 
 class Monitor(object):
 
-    def __init__(self, market, buy_strategy, sell_strategy, repo=None):
+    def __init__(self, market, buy_strategy='rsi',
+                 sell_strategy='', repo=None):
         self.market = market
-        self.buy_strategy = buy_strategy
+        self.buy_strategy = BUY_STRATEGY_MAP[buy_strategy]
         self.sell_strategy = sell_strategy
         self.api = ZBAPI(os.environ['ZB_ACCESS_KEY'],
                          os.environ['ZB_SERECT_KEY'],
@@ -73,9 +77,10 @@ class Monitor(object):
         ticker = self.api.get_ticker(market=self.market)
         if self.status == 0:
             time.sleep(1)
-            kline = self.api.get_kline(market=self.market, time_range="5min")
+            kline = self.api.get_kline(market=self.market, time_range="15min")
             if kline:
-                opt, buy = self.check_buy(ticker, kline=kline, strategy=RSI)
+                opt, buy = self.check_buy(
+                    ticker, kline=kline, strategy=self.buy_strategy)
                 if opt:
                     time.sleep(1)
                     self.buy(buy)
@@ -167,7 +172,8 @@ class Monitor(object):
             return self.follow_up(buy, profit)
         elif profit <= dca:
             print('go dca')
-            opt, sell = self.follow_down(sell, isdca=True)
+            opt, sell = self.follow_down(
+                sell, isdca=True, strategy=self.buy_strategy)
             if opt:
                 time.sleep(1)
                 self.buy(sell, isdca=True)
@@ -183,7 +189,7 @@ class Monitor(object):
         print(strategy_value)
         if strategy_value <= BUY_VALUE:
             return self.follow_down(ticker['ticker']['sell'],
-                                    strategy=strategy)
+                                    strategy=self.buy_strategy)
         else:
             return False, 0
 
@@ -236,9 +242,9 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    # repo = {'count': 518.62, 'avg_price': 7.712, 'dca': 0}
-    repo = None
-    monitor = Monitor('eos_qc', '', '', repo)
+    repo = {'count': 268.82, 'avg_price': 7.436104274235548, 'dca': 1}
+    # repo = None
+    monitor = Monitor('zb_qc', 'rsi', '', repo)
 
     while True:
         try:
