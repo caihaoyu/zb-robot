@@ -6,10 +6,10 @@ import numpy as np
 from zb_api import ZBAPI
 
 # 每次购买的比例
-trading_pairs = 1000
+trading_pairs = 300
 
 # 购买追价比例
-ALL_TRAILING_BUY = 0.35 / 100
+ALL_TRAILING_BUY = 0.5 / 100
 
 # 卖出追价比例
 ALL_TRAILING_SELL = 0.35 / 100
@@ -18,16 +18,16 @@ ALL_TRAILING_SELL = 0.35 / 100
 TRAILING_BUY_LIMT = 1 / 100
 
 # 购买RSI值
-BUY_VALUE = 30
+BUY_VALUE = 25
 
 # 卖出利润
-SELL_VALUE = 0.05
+SELL_VALUE = 1 / 100
 
 # DCA范围
 dca_percent = {
     0: -0.07,
     1: -0.1,
-    2: -0.24
+    2: -1
 }
 
 
@@ -204,6 +204,7 @@ class Monitor(object):
         print(f'buy_amount:{amount}')
         order = self.api.order(self.market, price, amount, 1)
         time.sleep(30)
+        print(order)
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
             print(order_detail)
@@ -237,14 +238,15 @@ class Monitor(object):
                 self.status = 0
                 self.repo = init_repo()
             elif order_detail['status'] == 0:
-                pass
+                self.api.cancel_order(self.market,order['id'])
 
 
 if __name__ == '__main__':
 
-    repo = {'count': 268.82, 'avg_price': 7.436104274235548, 'dca': 1}
-    # repo = None
-    monitor = Monitor('zb_qc', 'rsi', '', repo)
+    # repo = {'count': 7.550000000000001, 'avg_price': 79.26765562913907,
+    # 'dca': 1}
+    repo = None
+    monitor = Monitor('bts_qc', 'rsi', '', repo)
 
     while True:
         try:
