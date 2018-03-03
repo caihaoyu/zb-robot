@@ -76,7 +76,7 @@ class Monitor(object):
         else:
             self.repo = repo
             self.status = 1
-        self.balance = TRADING_PAIRS
+        self.balance = self.api.get_balance()
 
     def watch(self):
         kline = None
@@ -250,7 +250,7 @@ class Monitor(object):
             if order_detail['status'] == 2:
                 self.status = 0
                 self.repo = init_repo()
-                self.balance = float(order_detail['trade_money'])
+                self.balance = self.api.get_balance()
                 print(f'balance={self.balance}')
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])

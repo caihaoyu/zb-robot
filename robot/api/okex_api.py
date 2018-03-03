@@ -14,7 +14,11 @@ class OKAPI(IAPI):
         self.client = OKCoinSpot(url, self.mykey, self.mysecret)
 
     def query_account(self):
-        return self.client.userinfo()
+        return json.loads(self.client.userinfo())
+
+    def get_balance(self, name='usdt'):
+        account = self.query_account()
+        return float(account['info']['funds']['free'][name])
 
     def get_kline(self, market, time_range="15min"):
         return {'data': self.client.kline(market, time_range)}
@@ -53,7 +57,9 @@ if __name__ == '__main__':
 
     # print(api.get_ticker('btc_usdt'))
     # print(api.get_kline('btc_usdt'))
-    print(api.query_account())
+    account = api.query_account()
+
+    print(api.get_balance())
     # order = api.order('btc_usdt', 19000, 0.007907386422415348, 0)
     # print(order['order_id'])
 

@@ -26,3 +26,7 @@ class IAPI(metaclass=ABCMeta):
     @abstractmethod
     def get_order(self, currency, order_id):
         pass
+
+    @abstractmethod
+    def get_balance(self, name='usdt'):
+        pass
