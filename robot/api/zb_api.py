@@ -130,7 +130,7 @@ if __name__ == '__main__':
     api = ZBAPI(os.environ['ZB_ACCESS_KEY'],
                 os.environ['ZB_SERECT_KEY'])
 
-    # print(api.query_account())
+    print(api.query_account())
     #
     # print(api.get_kline("bts_usdt", time_range="15min"))
     #
@@ -138,5 +138,5 @@ if __name__ == '__main__':
 
     # print(api.order("bts_usdt", 0.35, 1, 1))
 
-    print(api.get_order("bts_usdt", 201802016223416))
+    # print(api.get_order("bts_usdt", 201802016223416))
     # print(api.cancel_order("bts_usdt", 201802016224048))
