@@ -23,11 +23,12 @@ class OKAPI(IAPI):
         return self.client.ticker(market)
 
     def order(self, currency, price, amount, trade_type):
-        if trade_type == 1:
-            trade_type = 'buy'
-        elif trade_type == 2:
-            trade_type = 'sell'
-        return self.client.trade(currency, trade_type, str(price), str(amount))
+        trade_type = 'buy' if trade_type == 1 else 'sell'
+        result = json.loads(self.client.trade(
+            currency, trade_type, str(price), str(amount)))
+        result['id'] = result['order_id']
+        result['code'] = 100 if result['result'] else 500
+        return result
 
     def cancel_order(self, currency, order_id):
         return self.client.cancelOrder(currency, order_id)
@@ -35,8 +36,13 @@ class OKAPI(IAPI):
     def get_order(self, currency, order_id):
         detail = json.loads(self.client.orderinfo(
             currency, order_id))['orders'][0]
-        result = {'status': detail['status'], 'deal_amount': detail[
-            'avg_price'], 'total_amount': detail['deal_amount']}
+        trade_money = float(detail['avg_price']) * float(detail['deal_amount'])
+        result = {'status': detail['status'],
+                  'deal_amount': detail['deal_amount'],
+                  'total_amount': detail['amount'],
+                  'avg_price': detail['avg_price'],
+                  'trade_money': trade_money
+                  }
         return result
 
 
@@ -46,10 +52,10 @@ if __name__ == '__main__':
                 os.environ['OK_SERECT_KEY'])
 
     # print(api.get_ticker('btc_usdt'))
-    print(api.get_kline('btc_usdt'))
-    # print(api.query_account())
-    # order = api.order('btc_usdt', 9000, 0.01, 1)
-    # print(order)
+    # print(api.get_kline('btc_usdt'))
+    print(api.query_account())
+    # order = api.order('btc_usdt', 19000, 0.007907386422415348, 0)
+    # print(order['order_id'])
 
     # print(api.cancel_order('btc_usdt', 348951105))
     # print(api.get_order('btc_usdt', 348951105))

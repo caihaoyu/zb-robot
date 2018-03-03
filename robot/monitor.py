@@ -7,7 +7,7 @@ import numpy as np
 from robot.api.okex_api import OKAPI
 
 # 每次购买的比例
-trading_pairs = 10
+TRADING_PAIRS = 10
 
 # 购买追价比例
 ALL_TRAILING_BUY = 0.3 / 100
@@ -19,12 +19,12 @@ ALL_TRAILING_SELL = 0.1 / 100
 TRAILING_BUY_LIMT = 1 / 100
 
 # 购买RSI值
-BUY_VALUE = 70
+BUY_VALUE = 25
 
 # 卖出利润
 SELL_VALUE = 1 / 100
 
-PANIC_VALUE = 3 / 100
+PANIC_VALUE = -3 / 100
 
 WAIT_TIME = 10
 
@@ -76,7 +76,7 @@ class Monitor(object):
         else:
             self.repo = repo
             self.status = 1
-        self.balance = 90
+        self.balance = TRADING_PAIRS
 
     def watch(self):
         kline = None
@@ -176,7 +176,7 @@ class Monitor(object):
         print(f'profit:{round(profit*100, 2)}%')
         if profit >= SELL_VALUE:
             return self.follow_up(buy, profit)
-        elif profit <= 0.03:
+        elif profit <= PANIC_VALUE:
             return True, buy
         elif profit <= dca:
             print('go dca')
@@ -251,15 +251,16 @@ class Monitor(object):
                 self.status = 0
                 self.repo = init_repo()
                 self.balance = float(order_detail['trade_money'])
+                print(f'balance={self.balance}')
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
 
 
 if __name__ == '__main__':
 
-    # repo = {'count': 7.550000000000001, 'avg_price': 79.26765562913907,
-    # 'dca': 1}
-    repo = None
+    repo = {'count': 0.00792323288819173, 'avg_price': 11358.9997,
+            'dca': 0}
+    # repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
     while True:
