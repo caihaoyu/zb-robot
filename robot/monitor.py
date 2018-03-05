@@ -137,7 +137,13 @@ class Monitor(object):
 
                 if sell > lowest_sell and isdca is False:
                     if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
-                        return True, sell
+                        strategy_value = RSI(
+                            self.api.get_kline(market=self.market,
+                                               time_range="15min"))
+                        if strategy_value <= BUY_VALUE:
+                            return True, sell
+                        else:
+                            return False, 0
                     elif percent > TRAILING_BUY_LIMT:
                         return False, 0
                     else:
