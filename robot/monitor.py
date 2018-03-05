@@ -82,18 +82,16 @@ class Monitor(object):
         kline = None
         ticker = self.api.get_ticker(market=self.market)
         if self.status == 0:
-            time.sleep(1)
+            # time.sleep(1)
             kline = self.api.get_kline(market=self.market, time_range="15min")
             if kline:
                 opt, buy = self.check_buy(
                     ticker, kline=kline, strategy=self.buy_strategy)
                 if opt:
-                    time.sleep(1)
                     self.buy(buy)
         else:
             opt, sell = self.check_sale(ticker)
             if opt:
-                time.sleep(1)
                 self.sell(sell)
 
     def follow_up(self, buy, high_profit):
@@ -139,13 +137,7 @@ class Monitor(object):
 
                 if sell > lowest_sell and isdca is False:
                     if TRAILING_BUY_LIMT >= percent >= ALL_TRAILING_BUY:
-                        strategy_value = RSI(
-                            self.api.get_kline(market=self.market,
-                                               time_range="15min"))
-                        if strategy_value <= BUY_VALUE:
-                            return True, sell
-                        else:
-                            return False, 0
+                        return True, sell
                     elif percent > TRAILING_BUY_LIMT:
                         return False, 0
                     else:
