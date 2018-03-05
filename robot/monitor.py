@@ -19,7 +19,7 @@ ALL_TRAILING_SELL = 0.1 / 100
 TRAILING_BUY_LIMT = 1 / 100
 
 # 购买RSI值
-BUY_VALUE = 25
+BUY_VALUE = 50
 
 # 卖出利润
 SELL_VALUE = 1 / 100
@@ -60,6 +60,11 @@ def init_repo():
     }
 
 
+def judgment_order(opt, value, order_method):
+    if opt:
+        order_method(value)
+
+
 class Monitor(object):
 
     def __init__(self, market, buy_strategy='rsi',
@@ -77,6 +82,7 @@ class Monitor(object):
             self.repo = repo
             self.status = 1
         self.balance = self.api.get_balance()
+        # self.balance = 10
 
     def watch(self):
         kline = None
@@ -85,14 +91,9 @@ class Monitor(object):
             # time.sleep(1)
             kline = self.api.get_kline(market=self.market, time_range="15min")
             if kline:
-                opt, buy = self.check_buy(
-                    ticker, kline=kline, strategy=self.buy_strategy)
-                if opt:
-                    self.buy(buy)
+                judgment_order(*self.check_buy(ticker, kline=kline), self.buy)
         else:
-            opt, sell = self.check_sale(ticker)
-            if opt:
-                self.sell(sell)
+            judgment_order(*self.check_sale(ticker), self.sell)
 
     def follow_up(self, buy, high_profit):
         cost = self.repo['avg_price']
@@ -181,7 +182,6 @@ class Monitor(object):
             opt, sell = self.follow_down(
                 sell, isdca=True, strategy=self.buy_strategy)
             if opt:
-                time.sleep(1)
                 self.buy(sell, isdca=True)
                 return False, 0
             else:
@@ -189,8 +189,8 @@ class Monitor(object):
         else:
             return False, 0
 
-    def check_buy(self, ticker, kline, strategy):
-        strategy_value = strategy(kline)
+    def check_buy(self, ticker, kline):
+        strategy_value = self.buy_strategy(kline)
 
         print(strategy_value)
         if strategy_value <= BUY_VALUE:
@@ -198,6 +198,7 @@ class Monitor(object):
                                     strategy=self.buy_strategy)
         else:
             return False, 0
+        # return True, float(ticker['ticker']['sell'])
 
     def buy(self, price, isdca=False):
         print('go_buy')
