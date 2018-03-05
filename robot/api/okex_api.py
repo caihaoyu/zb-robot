@@ -31,7 +31,7 @@ class OKAPI(IAPI):
         result = json.loads(self.client.trade(
             currency, trade_type, str(price), str(amount)))
         result['id'] = result['order_id']
-        result['code'] = 100 if result['result'] else 500
+        result['code'] = 1000 if result['result'] else 500
         return result
 
     def cancel_order(self, currency, order_id):

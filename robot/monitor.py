@@ -173,7 +173,7 @@ class Monitor(object):
         dca = dca_percent[self.repo['dca']]
         cost = self.repo['avg_price']
         profit = calculate_profit(buy, cost)
-        print(f'profit:{round(profit*100, 2)}%')
+        print(f'profit: {round(profit*100, 2)}%')
         if profit >= SELL_VALUE:
             return self.follow_up(buy, profit)
         elif profit <= PANIC_VALUE:
@@ -211,7 +211,7 @@ class Monitor(object):
         print(f'buy_price:{price}')
         print(f'buy_amount:{amount}')
         order = self.api.order(self.market, price, amount, 1)
-        time.sleep(WAIT_TIME)
+        time.sleep(60)
         print(order)
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
@@ -243,7 +243,7 @@ class Monitor(object):
         print(f'sell_amount:{amount}')
         order = self.api.order(self.market, price, amount, 0)
         print(order)
-        time.sleep(WAIT_TIME)
+        time.sleep(60)
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
             print(order_detail)
@@ -258,9 +258,9 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    repo = {'count': 0.00792323288819173, 'avg_price': 11358.9997,
-            'dca': 0}
-    # repo = None
+    # repo = {'count': 0.00792323288819173, 'avg_price': 11358.9997,
+    #         'dca': 0}
+    repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
     while True:
