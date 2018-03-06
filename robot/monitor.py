@@ -5,6 +5,7 @@ import talib
 import numpy as np
 # from robot.api.zb_api import ZBAPI
 from robot.api.okex_api import OKAPI
+from robot.util import gram
 
 # 每次购买的比例
 TRADING_PAIRS = 10
@@ -27,6 +28,8 @@ SELL_VALUE = 1 / 100
 PANIC_VALUE = -3 / 100
 
 WAIT_TIME = 10
+
+ATR = 0
 
 # DCA范围
 dca_percent = {
@@ -54,6 +57,14 @@ def calculate_profit(price, cost):
     return ((price * (0.998 ** 2) - cost) / cost)
 
 
+def get_ATR(day_kline):
+    kline_data = [list(map(float, item)) for item in day_kline['data']]
+
+    data = np.array(kline_data)
+    ATR = talib.ATR(data[:, 2], data[:, 3], data[:, 4], timeperiod=20)
+    return ATR[-1]
+
+
 def init_repo():
     return {
         'count': 0,
@@ -72,6 +83,7 @@ class Monitor(object):
     def __init__(self, market, buy_strategy='rsi',
                  sell_strategy='', repo=None):
         self.market = market
+        self.market_code = self.market.replace('_', '').upper()
         self.buy_strategy = BUY_STRATEGY_MAP[buy_strategy]
         self.sell_strategy = sell_strategy
         self.api = OKAPI(os.environ['OK_ACCESS_KEY'],
@@ -92,6 +104,10 @@ class Monitor(object):
         if self.status == 0:
             # time.sleep(1)
             kline = self.api.get_kline(market=self.market, time_range="15min")
+            # day_kline = self.api.get_kline(market=self.market,
+            #                                time_range="1day"
+            #                                )
+            # print(get_ATR(day_kline))
             if kline:
                 judgment_order(*self.check_buy(ticker, kline=kline), self.buy)
         else:
@@ -232,6 +248,11 @@ class Monitor(object):
                     self.repo['count'] += order_detail['total_amount']
                     self.repo['avg_price'] = total_cost / self.repo['count']
                     self.repo['dca'] += 1
+                gram.send_buy_message(market=self.market_code,
+                                      Amaout=self.repo['count'],
+                                      rate=self.repo['avg_price'],
+                                      trade_money=order_detail['trade_money']
+                                      )
                 self.status = 1
                 time.sleep(15 * 60)
             elif order_detail['status'] == 0:
@@ -250,15 +271,24 @@ class Monitor(object):
             print(order_detail)
             if order_detail['status'] == 2:
                 self.status = 0
-                self.repo = init_repo()
+                profit = calculate_profit(
+                    order_detail['avg_price'], self.repo['avg_price'])
                 self.balance = self.api.get_balance()
+                gram.send_sell_message(market=self.market_code,
+                                       profit=f'{round(profit*100, 2)}%',
+                                       amaout=order_detail['total_amount'],
+                                       cost=self.repo['avg_price'],
+                                       rate=order_detail['avg_price'],
+                                       balance=self.balance
+                                       )
+                self.repo = init_repo()
                 print(f'balance={self.balance}')
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
 
 
 if __name__ == '__main__':
-    # repo = {'count': 0.01678754, 'avg_price': 11274, 'dca': 0}
+    # repo = {'count': 0.1, 'avg_price': 10942.006, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
