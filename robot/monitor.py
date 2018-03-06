@@ -48,8 +48,8 @@ def RSI(kline=None):
 BUY_STRATEGY_MAP = {'rsi': RSI}
 
 
-def calculate_profit(buy, cost):
-    return ((buy - cost) / cost) - (0.4 / 100)
+def calculate_profit(price, cost):
+    return ((price * (0.098 ** 2) - cost) / cost)
 
 
 def init_repo():
@@ -257,9 +257,8 @@ class Monitor(object):
 
 if __name__ == '__main__':
 
-    # repo = {'count': 0.00792323288819173, 'avg_price': 11358.9997,
-    #         'dca': 0}
-    repo = None
+    repo = {'count': 0.01657243, 'avg_price': 11250.9695, 'dca': 0}
+    # repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
     while True:
