@@ -17,7 +17,7 @@ ALL_TRAILING_BUY = 0.2 / 100
 ALL_TRAILING_SELL = 0.1 / 100
 
 # 购买范围
-TRAILING_BUY_LIMT = 1 / 100
+TRAILING_BUY_LIMT = 0.5 / 100
 
 # 购买RSI值
 BUY_VALUE = 25
@@ -288,7 +288,7 @@ class Monitor(object):
 
 
 if __name__ == '__main__':
-    # repo = {'count': 0.01677526, 'avg_price': 10942.006, 'dca': 0}
+    # repo = {'count': 0.01776232, 'avg_price': 10016.4787, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
