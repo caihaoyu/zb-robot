@@ -11,7 +11,7 @@ from robot.util import gram
 # TRADING_PAIRS = 10
 
 # 购买追价比例
-ALL_TRAILING_BUY = 0.3 / 100
+ALL_TRAILING_BUY = 0.2 / 100
 
 # 卖出追价比例
 ALL_TRAILING_SELL = 0.1 / 100
@@ -288,7 +288,7 @@ class Monitor(object):
 
 
 if __name__ == '__main__':
-    # repo = {'count': 0.1, 'avg_price': 10942.006, 'dca': 0}
+    # repo = {'count': 0.01677526, 'avg_price': 10942.006, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
