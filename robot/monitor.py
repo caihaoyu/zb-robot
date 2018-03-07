@@ -7,8 +7,8 @@ import numpy as np
 from robot.api.okex_api import OKAPI
 from robot.util import gram
 
-# 每次购买的比例
-TRADING_PAIRS = 10
+# # 每次购买的比例
+# TRADING_PAIRS = 10
 
 # 购买追价比例
 ALL_TRAILING_BUY = 0.3 / 100
