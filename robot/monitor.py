@@ -249,7 +249,7 @@ class Monitor(object):
                     self.repo['avg_price'] = total_cost / self.repo['count']
                     self.repo['dca'] += 1
                 gram.send_buy_message(market=self.market_code,
-                                      Amaout=self.repo['count'],
+                                      amaout=self.repo['count'],
                                       rate=self.repo['avg_price'],
                                       trade_money=order_detail['trade_money']
                                       )
