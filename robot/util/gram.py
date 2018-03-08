@@ -1,5 +1,6 @@
 import os
 import telegram
+from threading import Thread
 
 template_sell = '''
 *OKEX BOT*
@@ -25,18 +26,16 @@ bot = telegram.Bot(token=token)
 
 
 def send_message(text):
-    bot.send_message(chat_id=chat_id,
-                     text=text,
-                     parse_mode=telegram.ParseMode.MARKDOWN)
+    kwargs = {'chat_id': chat_id,
+              'text': text,
+              'parse_mode': telegram.ParseMode.MARKDOWN
+              }
+    Thread(target=bot.send_message, kwargs=kwargs).start()
 
 
-def send_sell_message(**kwargs):
-    text = template_sell.format_map(kwargs)
-    send_message(text)
-
-
-def send_buy_message(**kwargs):
-    text = template_buy.format_map(kwargs)
+def send_trade_message(trade_type='sell', **kwargs):
+    template = template_sell if trade_type == 'sell' else template_buy
+    text = template.format_map(kwargs)
     send_message(text)
 
 
@@ -47,8 +46,9 @@ if __name__ == '__main__':
         'profit': '1%',
         'rate': 11290,
         'cost': 11300,
-        'amaout': 0.1622231
-
+        'amaout': 0.1622231,
+        'balance': 1231
     }
 
-    send_sell_message(**sell_test)
+    # Thread(target=send_sell_message, kwargs=sell_test).start()
+    send_trade_message(**sell_test)

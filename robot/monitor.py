@@ -248,12 +248,13 @@ class Monitor(object):
                     self.repo['count'] += order_detail['total_amount']
                     self.repo['avg_price'] = total_cost / self.repo['count']
                     self.repo['dca'] += 1
-                gram.send_buy_message(market=self.market_code,
-                                      amaout=self.repo['count'],
-                                      rate=self.repo['avg_price'],
-                                      trade_money=order_detail['trade_money']
-                                      )
                 self.status = 1
+                gram.send_trade_message(trade_type='buy',
+                                        market=self.market_code,
+                                        amaout=self.repo['count'],
+                                        rate=self.repo['avg_price'],
+                                        trade_money=order_detail['trade_money']
+                                        )
                 time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
@@ -274,14 +275,15 @@ class Monitor(object):
                 profit = calculate_profit(
                     order_detail['avg_price'], self.repo['avg_price'])
                 self.balance = self.api.get_balance()
-                gram.send_sell_message(market=self.market_code,
-                                       profit=f'{round(profit*100, 2)}%',
-                                       amaout=order_detail['total_amount'],
-                                       cost=self.repo['avg_price'],
-                                       rate=order_detail['avg_price'],
-                                       balance=self.balance
-                                       )
+                old_repo = self.repo
                 self.repo = init_repo()
+                gram.send_trade_message(market=self.market_code,
+                                        profit=f'{round(profit*100, 2)}%',
+                                        amaout=order_detail['total_amount'],
+                                        cost=old_repo['avg_price'],
+                                        rate=order_detail['avg_price'],
+                                        balance=self.balance
+                                        )
                 print(f'balance={self.balance}')
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
