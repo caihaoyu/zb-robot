@@ -277,7 +277,8 @@ class Monitor(object):
                 self.balance = self.api.get_balance()
                 old_repo = self.repo
                 self.repo = init_repo()
-                gram.send_trade_message(market=self.market_code,
+                gram.send_trade_message(trade_type='sell',
+                                        market=self.market_code,
                                         profit=f'{round(profit*100, 2)}%',
                                         amaout=order_detail['total_amount'],
                                         cost=old_repo['avg_price'],
