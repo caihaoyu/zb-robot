@@ -45,7 +45,7 @@ def RSI(kline=None):
     closes = np.array(kline_data)
     rsi = talib.RSI(closes)
 
-    return rsi[-1]
+    return int(rsi[-1])
 
 
 BUY_STRATEGY_MAP = {'rsi': RSI}
@@ -210,7 +210,7 @@ class Monitor(object):
     def check_buy(self, ticker, kline):
         strategy_value = self.buy_strategy(kline)
 
-        print(strategy_value)
+        print(f'RSI:{strategy_value}')
         if strategy_value <= BUY_VALUE:
             return self.follow_down(ticker['ticker']['sell'],
                                     strategy=self.buy_strategy)
@@ -291,7 +291,7 @@ class Monitor(object):
 
 
 if __name__ == '__main__':
-    # repo = {'count': 0.01776232, 'avg_price': 10016.4787, 'dca': 0}
+    # repo = {'count': 0.01896155, 'avg_price': 8957.9416, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
