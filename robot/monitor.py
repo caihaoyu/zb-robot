@@ -255,6 +255,7 @@ class Monitor(object):
                                         rate=self.repo['avg_price'],
                                         trade_money=order_detail['trade_money']
                                         )
+                print(self.repo)
                 time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
@@ -286,6 +287,7 @@ class Monitor(object):
                                         balance=self.balance
                                         )
                 print(f'balance={self.balance}')
+                time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
 
