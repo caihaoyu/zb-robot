@@ -192,8 +192,10 @@ class Monitor(object):
         dca = dca_percent[self.repo['dca']]
         cost = self.repo['avg_price']
         profit = calculate_profit(buy, cost)
+
         print(f'profit: {round(profit*100, 2)}%')
-        if profit > 0 and rsi >= SELL_VALUE:
+
+        if (profit > 0 and rsi >= SELL_VALUE) or profit > 0.15:
             return self.follow_up(buy, profit)
         elif profit <= PANIC_VALUE:
             return True, buy
