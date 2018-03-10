@@ -45,7 +45,7 @@ def RSI(kline=None):
     closes = np.array(kline_data)
     rsi = talib.RSI(closes)
 
-    return int(rsi[-1])
+    return rsi[-1]
 
 
 BUY_STRATEGY_MAP = {'rsi': RSI}
@@ -287,7 +287,7 @@ class Monitor(object):
                                         balance=self.balance
                                         )
                 print(f'balance={self.balance}')
-                time.sleep(15 * 60)
+                # time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
 
