@@ -23,7 +23,7 @@ TRAILING_BUY_LIMT = 0.5 / 100
 BUY_VALUE = 25
 
 # 卖出利润
-SELL_VALUE = 1 / 100
+SELL_VALUE = 50
 
 PANIC_VALUE = -3 / 100
 
@@ -95,23 +95,18 @@ class Monitor(object):
         else:
             self.repo = repo
             self.status = 1
-        self.balance = self.api.get_balance()
+        self.balance = self.api.get_balance() * 0.5
         # self.balance = 10
 
     def watch(self):
-        kline = None
+        kline = self.api.get_kline(market=self.market, time_range="15min")
         ticker = self.api.get_ticker(market=self.market)
-        if self.status == 0:
-            # time.sleep(1)
-            kline = self.api.get_kline(market=self.market, time_range="15min")
-            # day_kline = self.api.get_kline(market=self.market,
-            #                                time_range="1day"
-            #                                )
-            # print(get_ATR(day_kline))
-            if kline:
+        if kline:
+            if self.status == 0:
                 judgment_order(*self.check_buy(ticker, kline=kline), self.buy)
-        else:
-            judgment_order(*self.check_sale(ticker), self.sell)
+            else:
+                judgment_order(*self.check_sale(ticker, kline=kline),
+                               self.sell)
 
     def follow_up(self, buy, high_profit):
         cost = self.repo['avg_price']
@@ -127,14 +122,20 @@ class Monitor(object):
                       f'profit_diff:{profit_diff},\n'
                       f'high_profit:{high_profit}')
 
-                if profit < SELL_VALUE:
-                    return False, 0
-                else:
-                    if profit_diff < 0:
-                        high_profit = profit
-                    elif profit_diff >= ALL_TRAILING_SELL:
-                        print('go sell')
-                        return True, buy
+                if profit_diff < 0:
+                    high_profit = profit
+                elif profit_diff >= ALL_TRAILING_SELL:
+                    print('go sell')
+                    return True, buy
+
+                # if profit < SELL_VALUE:
+                #     return False, 0
+                # else:
+                #     if profit_diff < 0:
+                #         high_profit = profit
+                #     elif profit_diff >= ALL_TRAILING_SELL:
+                #         print('go sell')
+                #         return True, buy
 
             except Exception as ex:
                 print(ex)
@@ -184,14 +185,15 @@ class Monitor(object):
                 print(ex)
                 time.sleep(WAIT_TIME)
 
-    def check_sale(self, ticker):
+    def check_sale(self, ticker, kline):
+        rsi = RSI(kline=kline)
         buy = float(ticker['ticker']['buy'])
         sell = float(ticker['ticker']['sell'])
         dca = dca_percent[self.repo['dca']]
         cost = self.repo['avg_price']
         profit = calculate_profit(buy, cost)
         print(f'profit: {round(profit*100, 2)}%')
-        if profit >= SELL_VALUE:
+        if profit > 0 and rsi >= SELL_VALUE:
             return self.follow_up(buy, profit)
         elif profit <= PANIC_VALUE:
             return True, buy
@@ -287,6 +289,8 @@ class Monitor(object):
                                         balance=self.balance
                                         )
                 print(f'balance={self.balance}')
+                if profit > 0:
+                    self.balance = self.balance * 0.5
                 # time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
