@@ -11,7 +11,7 @@ from robot.util import gram
 # TRADING_PAIRS = 10
 
 # 购买追价比例
-ALL_TRAILING_BUY = 0.2 / 100
+ALL_TRAILING_BUY = 0.3 / 100
 
 # 卖出追价比例
 ALL_TRAILING_SELL = 0.1 / 100
@@ -96,6 +96,7 @@ class Monitor(object):
             self.repo = repo
             self.status = 1
         self.balance = self.api.get_balance() * 0.5
+        self.is_loss = False
         # self.balance = 10
 
     def watch(self):
@@ -285,7 +286,7 @@ class Monitor(object):
                 self.status = 0
                 profit = calculate_profit(
                     order_detail['avg_price'], self.repo['avg_price'])
-                self.balance = self.api.get_balance()
+                balance = self.api.get_balance()
                 old_repo = self.repo
                 self.repo = init_repo()
                 gram.send_trade_message(trade_type='sell',
@@ -294,11 +295,16 @@ class Monitor(object):
                                         amaout=order_detail['total_amount'],
                                         cost=old_repo['avg_price'],
                                         rate=order_detail['avg_price'],
-                                        balance=self.balance
+                                        balance=balance
                                         )
-                print(f'balance={self.balance}')
+                print(f'balance={balance}')
+                self.balance = balance if self.is_loss else self.balance * 0.5
+
                 if profit > 0:
-                    self.balance = self.balance * 0.5
+                    self.balance = balance * 0.5
+                    self.is_loss = False
+                else:
+                    self.is_loss = True
                 # time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
