@@ -263,6 +263,12 @@ class Monitor(object):
                 time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
+            else:
+                self.api.cancel_order(self.market, order['id'])
+                order_detail = self.api.get_order(self.market, order['id'])
+                self.balance -= order_detail['trade_money']
+                price = self.api.get_ticker['sell']
+                self.sell(price=price)
             print(self.repo)
 
     def sell(self, price):
@@ -296,6 +302,12 @@ class Monitor(object):
                 # time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
+            else:
+                self.api.cancel_order(self.market, order['id'])
+                order_detail = self.api.get_order(self.market, order['id'])
+                self.repo['count'] -= order_detail['deal_amount']
+                price = self.api.get_ticker['buy']
+                self.sell(price=price)
 
 
 if __name__ == '__main__':
