@@ -43,7 +43,7 @@ def RSI(kline=None):
     kline_data = [float(item[4]) for item in kline['data']]
     # print(kline_data)
     closes = np.array(kline_data)
-    rsi = talib.RSI(closes)
+    rsi = talib.RSI(closes, timeperiod=14)
 
     return rsi[-1]
 
