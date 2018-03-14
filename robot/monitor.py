@@ -294,7 +294,7 @@ class Monitor(object):
                                         balance=balance
                                         )
                 print(f'balance={balance}')
-                self.balance = balance if self.is_loss else self.balance * 0.5
+                self.balance = balance if self.is_loss else balance * 0.5
 
                 if profit > 0:
                     self.balance = balance * 0.5
@@ -313,7 +313,7 @@ class Monitor(object):
 
 
 if __name__ == '__main__':
-    # repo = {'count': 0.01896155, 'avg_price': 8957.9416, 'dca': 0}
+    # repo = {'count':0.04636555 , 'avg_price':8749.1008, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
