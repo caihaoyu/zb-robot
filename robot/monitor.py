@@ -190,7 +190,7 @@ class Monitor(object):
         cost = self.repo['avg_price']
         profit = calculate_profit(buy, cost)
 
-        print(f'profit: {round(profit*100, 2)}%')
+        print(f'profit: {round(profit*100, 2)}%, RSI:{rsi}')
 
         if (profit > 0 and rsi >= SELL_VALUE) or profit > 0.15:
             return self.follow_up(buy, profit)
