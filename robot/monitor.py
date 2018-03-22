@@ -1,10 +1,9 @@
 import threading
 from threading import Lock
 
-from robot.common import util
+import robot.env
+from robot.env import balance
 from robot.monitor.monitor import Monitor
-
-balance = util.current_balance()
 
 
 def get_local_balance(lock):

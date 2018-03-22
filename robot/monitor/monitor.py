@@ -30,8 +30,15 @@ def judgment_order(opt, value, order_method):
 
 class Monitor(object):
 
-    def __init__(self, market, buy_strategy='rsi',
-                 sell_strategy='', repo=None, lock=None):
+    def __init__(self,
+                 market,
+                 buy_strategy='rsi',
+                 sell_strategy='',
+                 repo=None,
+                 lock=None,
+                 balance=None,
+                 get_local_balance=None,
+                 update_local_balance=None):
         self.market = market
         self.market_code = self.market.replace('_', '').upper()
         self.buy_strategy = BUY_STRATEGY_MAP[buy_strategy]
@@ -47,8 +54,11 @@ class Monitor(object):
             self.status = 1
         self.balance = self.api.get_balance() * 0.5
         self.is_loss = False
+
         self.lock = lock
-        # self.balance = 10
+        self.local_balance = balance
+        self.get_local_balance = get_local_balance
+        self.update_local_balance = update_local_balance
 
     def watch(self):
         kline = self.api.get_kline(market=self.market, time_range="15min")
@@ -176,10 +186,19 @@ class Monitor(object):
         if isdca:
             amount = (self.repo['avg_price'] * self.repo['count']) / price
         else:
-            amount = float(self.balance) / price
+            for _ in range(5):
+                local_balance = self.get_local_balance(self.lock)
+                if (local_balance and
+                   self.api.get_balance() > local_balance * 0.55):
+                    self.local_balance = local_balance
+                    amount = float(self.local_balance * 0.25) / price
+                    break
+            else:
+                return
 
         print(f'buy_price:{price}')
         print(f'buy_amount:{amount}')
+
         order = self.api.order(self.market, price, amount, 1)
         time.sleep(60)
         print(order)
@@ -236,15 +255,22 @@ class Monitor(object):
                     order_detail['avg_price'], self.repo['avg_price'])
                 balance = self.api.get_balance()
                 old_repo = self.repo
+
+                # update local balance
+                change = profit * self.repo['count'] * self.repo['avg_price']
+                self.update_local_balance(self.lock, change)
+                print(f'update local_balance with {change}')
+                print(f'local_balance is {self.get_local_balance(self.lock)}')
+
                 self.repo = util.init_repo()
-                gram.send_trade_message(trade_type='sell',
-                                        market=self.market_code,
-                                        profit=f'{round(profit*100, 2)}%',
-                                        amaout=order_detail['total_amount'],
-                                        cost=old_repo['avg_price'],
-                                        rate=order_detail['avg_price'],
-                                        balance=balance
-                                        )
+                # gram.send_trade_message(trade_type='sell',
+                #                         market=self.market_code,
+                #                         profit=f'{round(profit*100, 2)}%',
+                #                         amaout=order_detail['total_amount'],
+                #                         cost=old_repo['avg_price'],
+                #                         rate=order_detail['avg_price'],
+                #                         balance=balance
+                #                         )
                 print(f'balance={balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
 
