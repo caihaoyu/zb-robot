@@ -10,24 +10,38 @@ def get_local_balance(lock):
     try:
         if lock.acquire(blocking=False):
             global balance
+            print(f'get_local_balance: {balance}')
             return balance
         return False
     except Exception as e:
         print(e)
+    finally:
+        lock.release()
 
 
 def update_local_balance(lock, change):
     try:
         lock.acquire(blocking=True)
         global balance
+        print(f'balance: {balance}, change: {change}')
         balance += change
         lock.release()
     except Exception as e:
         print(e)
+    finally:
+        lock.release()
 
 
-def run_monitor(symbol, balance, lock):
-    monitor = Monitor(market=symbol, lock=lock, balance=balance)
+def run_monitor(symbol,
+                balance,
+                lock,
+                get_local_balance,
+                update_local_balance):
+    monitor = Monitor(market=symbol,
+                      lock=lock,
+                      balance=balance,
+                      get_local_balance=get_local_balance,
+                      update_local_balance=update_local_balance)
     monitor.run()
 
 

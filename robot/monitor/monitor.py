@@ -1,4 +1,5 @@
 import time
+import threading
 
 import talib
 import numpy as np
@@ -173,7 +174,8 @@ class Monitor(object):
     def check_buy(self, ticker, kline):
         strategy_value = self.buy_strategy(kline)
 
-        print(f'RSI:{strategy_value}')
+        current_name = threading.current_thread().getName()
+        print(f'{current_name} RSI:{strategy_value}')
         if strategy_value <= RSIStrategy.BUY_VALUE:
             return self.follow_down(ticker['ticker']['sell'],
                                     strategy=self.buy_strategy)
@@ -188,10 +190,18 @@ class Monitor(object):
         else:
             for _ in range(5):
                 local_balance = self.get_local_balance(self.lock)
-                if (local_balance and
-                   self.api.get_balance() > local_balance * 0.55):
+                if local_balance:
                     self.local_balance = local_balance
-                    amount = float(self.local_balance * 0.25) / price
+                    online_balance = self.api.get_balance()
+                    if online_balance > local_balance * 0.55:
+                        if self.is_loss:
+                            radio = 2 if self.is_loss else 1
+                            amount = min(self.local_balance * radio * 0.25,
+                                         online_balance)
+                            amount = float(amount) / price
+                    else:
+                        gram.send_message(
+                            f'Not enough money to buy {self.market}')
                     break
             else:
                 return
@@ -258,19 +268,20 @@ class Monitor(object):
 
                 # update local balance
                 change = profit * self.repo['count'] * self.repo['avg_price']
+                print(change)
                 self.update_local_balance(self.lock, change)
                 print(f'update local_balance with {change}')
                 print(f'local_balance is {self.get_local_balance(self.lock)}')
 
                 self.repo = util.init_repo()
-                # gram.send_trade_message(trade_type='sell',
-                #                         market=self.market_code,
-                #                         profit=f'{round(profit*100, 2)}%',
-                #                         amaout=order_detail['total_amount'],
-                #                         cost=old_repo['avg_price'],
-                #                         rate=order_detail['avg_price'],
-                #                         balance=balance
-                #                         )
+                gram.send_trade_message(trade_type='sell',
+                                        market=self.market_code,
+                                        profit=f'{round(profit*100, 2)}%',
+                                        amaout=order_detail['total_amount'],
+                                        cost=old_repo['avg_price'],
+                                        rate=order_detail['avg_price'],
+                                        balance=balance
+                                        )
                 print(f'balance={balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
 

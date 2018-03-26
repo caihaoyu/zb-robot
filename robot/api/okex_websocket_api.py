@@ -82,6 +82,6 @@ class OKAPI(object):
 if __name__ == '__main__':
 
     api = OKAPI(os.environ['OK_ACCESS_KEY'],
-                os.environ['OK_SERECT_KEY'])
+                os.environ['OK_SECRET_KEY'])
 
     print(api.get_kline('btc_usdt'))
