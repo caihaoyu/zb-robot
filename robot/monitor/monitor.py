@@ -191,6 +191,7 @@ class Monitor(object):
         else:
             for _ in range(5):
                 local_balance = self.get_local_balance(self.lock)
+                print(f'local_balance: {local_balance}')
                 if local_balance:
                     self.local_balance = local_balance
                     online_balance = self.api.get_balance()
