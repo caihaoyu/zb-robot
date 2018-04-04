@@ -185,6 +185,7 @@ class Monitor(object):
 
     def buy(self, price, isdca=False):
         print('go_buy')
+        amount = 0
         if isdca:
             amount = (self.repo['avg_price'] * self.repo['count']) / price
         else:
