@@ -10,7 +10,6 @@ def get_local_balance(lock):
     try:
         if lock.acquire(blocking=False):
             global balance
-            print(f'get_local_balance: {balance}')
             return balance
         return False
     except Exception as e:

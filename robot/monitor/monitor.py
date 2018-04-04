@@ -191,16 +191,14 @@ class Monitor(object):
         else:
             for _ in range(5):
                 local_balance = self.get_local_balance(self.lock)
-                print(f'local_balance: {local_balance}')
                 if local_balance:
                     self.local_balance = local_balance
                     online_balance = self.api.get_balance()
                     if online_balance > local_balance * 0.55:
-                        if self.is_loss:
-                            radio = 2 if self.is_loss else 1
-                            amount = min(self.local_balance * radio * 0.25,
-                                         online_balance)
-                            amount = float(amount) / price
+                        radio = 2 if self.is_loss else 1
+                        amount = min(self.local_balance * radio * 0.25,
+                                     online_balance)
+                        amount = float(amount) / price
                     else:
                         gram.send_message(
                             f'Not enough money to buy {self.market}')
