@@ -46,7 +46,7 @@ def run_monitor(symbol,
 
 
 def main():
-    logging.basicConfig(filename='~/log/debug.log',
+    logging.basicConfig(filename='log/debug.log',
                         level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
