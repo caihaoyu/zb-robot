@@ -257,14 +257,14 @@ class Monitor(object):
 
     def sell(self, price):
         amount = self.repo['count'] * 0.998
-        print(f'sell_price:{price}')
-        print(f'sell_amount:{amount}')
+        logging.info(f'sell_price:   {price}')
+        logging.info(f'sell_amount:  {amount}')
         order = self.api.order(self.market, price, amount, 0)
-        print(order)
+        logging.info(f'order:        {str(order)}')
         time.sleep(60)
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
-            print(order_detail)
+            logging.info(f'order_detail: {order_detail}')
             if order_detail['status'] == 2:
                 self.status = 0
                 profit = util.calculate_profit(
@@ -274,10 +274,11 @@ class Monitor(object):
 
                 # update local balance
                 change = profit * self.repo['count'] * self.repo['avg_price']
-                print(change)
+                logging.info(f'change:       {change}')
                 self.update_local_balance(self.lock, change)
-                print(f'update local_balance with {change}')
-                print(f'local_balance is {self.get_local_balance(self.lock)}')
+                logging.info(f'update local_balance with {change}')
+                logging.info(
+                    f'local_balance is {self.get_local_balance(self.lock)}')
 
                 self.repo = util.init_repo()
                 gram.send_trade_message(trade_type='sell',
@@ -288,7 +289,7 @@ class Monitor(object):
                                         rate=order_detail['avg_price'],
                                         balance=balance
                                         )
-                print(f'balance={balance}')
+                logging.info(f'balance:      {balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
 
                 if profit > 0:
