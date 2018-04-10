@@ -1,3 +1,4 @@
+import argparse
 import logging
 import threading
 from threading import Lock
@@ -45,9 +46,24 @@ def run_monitor(symbol,
     monitor.run()
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--debug', action='store_true',
+                        help='Enable DEBUG message output.')
+
+    return parser.parse_args()
+
+
 def main():
+    args = parse_args()
+
+    level = logging.INFO
+    if args.debug:
+        level = logging.DEBUG
+
     logging.basicConfig(filename='log/debug.log',
-                        level=logging.INFO,
+                        level=level,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
     symbols = ['ltc_usdt', 'etc_usdt', 'bch_usdt']
