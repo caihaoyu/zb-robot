@@ -156,14 +156,14 @@ class Monitor(object):
         cost = self.repo['avg_price']
         profit = util.calculate_profit(buy, cost)
 
-        logging.debug(f'profit: {round(profit*100, 2)}%, RSI:{rsi}')
+        logging.debug(f'profit: {round(profit*100, 2)}%, RSI: {rsi}')
 
         if (profit > 0 and rsi >= RSIStrategy.SELL_VALUE) or profit > 0.15:
             return self.follow_up(buy, profit)
         elif profit <= RSIStrategy.PANIC_VALUE:
             return True, buy
         elif profit <= dca:
-            logging.info(f'profit: {round(profit*100, 2)}%, RSI:{rsi}')
+            logging.info(f'profit: {round(profit*100, 2)}%, RSI: {rsi}')
             logging.info('go dca')
             opt, sell = self.follow_down(
                 sell, isdca=True, strategy=self.buy_strategy)
@@ -178,7 +178,7 @@ class Monitor(object):
     def check_buy(self, ticker, kline):
         strategy_value = self.buy_strategy(kline)
 
-        logging.debug(f'{self.market} RSI:{strategy_value}')
+        logging.debug(f'{self.market} RSI: {strategy_value}')
         if strategy_value <= RSIStrategy.BUY_VALUE:
             return self.follow_down(ticker['ticker']['sell'],
                                     strategy=self.buy_strategy)

@@ -59,10 +59,13 @@ def main():
     args = parse_args()
 
     level = logging.INFO
+    filename = 'info'
     if args.debug:
         level = logging.DEBUG
+        filename = 'debug'
 
-    logging.basicConfig(level=level,
+    logging.basicConfig(filename=f'log/{filename}.log',
+                        level=level,
                         format='%(asctime)s - %(levelname)s - %(message)s')
 
     symbols = ['ltc_usdt', 'etc_usdt', 'bch_usdt']
