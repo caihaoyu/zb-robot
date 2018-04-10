@@ -1,15 +1,14 @@
-from .base_api import IAPI
 import os
 import websocket
 import hashlib
 import zlib
-import base64
 import json
 
 
 def on_open(self):
     self.send(
-        "{'event': 'addChannel', 'channel': 'ok_sub_spot_btc_usdt_kline_15min'}")
+        ("{'event': 'addChannel', 'channel': "
+         "ok_sub_spot_btc_usdt_kline_15min'}"))
 
 
 def on_message(self, evt):
@@ -49,7 +48,7 @@ class OKAPI(object):
         self.client.on_open = on_open
         self.client.run_forever()
 
-    def buildMySign(params):
+    def buildMySign(self, params):
         sign = ''
         for key in sorted(params.keys()):
             sign += key + '=' + str(params[key]) + '&'

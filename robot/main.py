@@ -1,3 +1,4 @@
+import logging
 import threading
 from threading import Lock
 
@@ -13,7 +14,7 @@ def get_local_balance(lock):
             return balance
         return False
     except Exception as e:
-        print(e)
+        logging.error(str(e))
     finally:
         lock.release()
 
@@ -22,11 +23,11 @@ def update_local_balance(lock, change):
     try:
         lock.acquire(blocking=True)
         global balance
-        print(f'balance: {balance}, change: {change}')
+        logging.debug(f'balance: {balance}, change: {change}')
         balance += change
         lock.release()
     except Exception as e:
-        print(e)
+        logging.error(str(e))
     finally:
         lock.release()
 
@@ -45,6 +46,10 @@ def run_monitor(symbol,
 
 
 def main():
+    logging.basicConfig(filename='~/log/debug.log',
+                        level=logging.INFO,
+                        format='%(asctime)s - %(levelname)s - %(message)s')
+
     symbols = ['ltc_usdt', 'etc_usdt', 'bch_usdt']
 
     threads = []
