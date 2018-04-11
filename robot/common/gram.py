@@ -30,7 +30,8 @@ def send_message(text):
               'text': text,
               'parse_mode': telegram.ParseMode.MARKDOWN
               }
-    Thread(target=bot.send_message, kwargs=kwargs).start()
+    # Thread(target=bot.send_message, kwargs=kwargs).start()
+    return bot.send_message(**kwargs)
 
 
 def send_trade_message(trade_type='sell', **kwargs):
