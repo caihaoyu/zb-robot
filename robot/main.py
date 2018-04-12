@@ -1,5 +1,5 @@
 import argparse
-import logging
+from robot.common.logging import logger
 import threading
 from threading import Lock
 
@@ -15,7 +15,7 @@ def get_local_balance(lock):
             return balance
         return False
     except Exception as e:
-        logging.error(str(e))
+        logger.error(str(e))
     finally:
         lock.release()
 
@@ -24,11 +24,11 @@ def update_local_balance(lock, change):
     try:
         lock.acquire(blocking=True)
         global balance
-        logging.debug(f'balance: {balance}, change: {change}')
+        logger.debug(f'balance: {balance}, change: {change}')
         balance += change
         lock.release()
     except Exception as e:
-        logging.error(str(e))
+        logger.error(str(e))
     finally:
         lock.release()
 
@@ -56,17 +56,6 @@ def parse_args():
 
 
 def main():
-    args = parse_args()
-
-    level = logging.INFO
-    filename = 'info'
-    if args.debug:
-        level = logging.DEBUG
-        filename = 'debug'
-
-    logging.basicConfig(level=level,
-                        format='%(asctime)s - [%(levelname)s] : %(message)s')
-
     symbols = ['ltc_usdt', 'etc_usdt', 'bch_usdt']
 
     threads = []

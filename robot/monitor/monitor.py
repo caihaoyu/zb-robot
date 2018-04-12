@@ -1,4 +1,4 @@
-import logging
+from robot.common.logging import logger
 import time
 
 import talib
@@ -66,10 +66,11 @@ class Monitor(object):
         ticker = self.api.get_ticker(market=self.market)
         if kline:
             if self.status == 0:
-                judgment_order(*self.check_buy(ticker, kline=kline), self.buy)
+                judgment_order(
+                    *self.check_buy(ticker, kline=kline), self.buy)
             else:
-                judgment_order(*self.check_sale(ticker, kline=kline),
-                               self.sell)
+                judgment_order(
+                    *self.check_sale(ticker, kline=kline), self.sell)
 
     def follow_up(self, buy, high_profit):
         cost = self.repo['avg_price']
@@ -81,17 +82,17 @@ class Monitor(object):
                 profit = util.calculate_profit(buy, cost)
                 profit_diff = high_profit - profit
 
-                logging.debug(f'profit:{profit},\n'
-                              f'profit_diff:{profit_diff},\n'
-                              f'high_profit:{high_profit}')
+                logger.debug(f'profit:{profit},\n'
+                             f'profit_diff:{profit_diff},\n'
+                             f'high_profit:{high_profit}')
 
                 if profit_diff < 0:
                     high_profit = profit
                 elif profit_diff >= RSIStrategy.ALL_TRAILING_SELL:
-                    logging.info(f'profit:{profit},\n'
-                                 f'profit_diff:{profit_diff},\n'
-                                 f'high_profit:{high_profit}')
-                    logging.info('go sell')
+                    logger.info(f'profit:{profit},\n'
+                                f'profit_diff:{profit_diff},\n'
+                                f'high_profit:{high_profit}')
+                    logger.info('go sell')
                     return True, buy
 
                 # if profit < SELL_VALUE:
@@ -104,7 +105,7 @@ class Monitor(object):
                 #         return True, buy
 
             except Exception as e:
-                logging.error(str(e))
+                logger.error(str(e))
                 time.sleep(WAIT_TIME)
 
     def follow_down(self, sell, strategy, isdca=False):
@@ -119,7 +120,7 @@ class Monitor(object):
                 sell = float(ticker['ticker']['sell'])
                 percent = (sell - lowest_sell) / lowest_sell
 
-                logging.debug(f'lowest_sell: {lowest_sell}, sell: {sell}')
+                logger.debug(f'lowest_sell: {lowest_sell}, sell: {sell}')
 
                 if sell > lowest_sell and isdca is False:
                     if percent >= RSIStrategy.ALL_TRAILING_BUY:
@@ -145,7 +146,7 @@ class Monitor(object):
                     lowest_sell = sell
 
             except Exception as e:
-                logging.error(str(e))
+                logger.error(str(e))
                 time.sleep(WAIT_TIME)
 
     def check_sale(self, ticker, kline):
@@ -156,15 +157,15 @@ class Monitor(object):
         cost = self.repo['avg_price']
         profit = util.calculate_profit(buy, cost)
 
-        logging.debug(f'profit: {round(profit*100, 2)}%, RSI: {rsi}')
+        logger.debug(f'profit: {round(profit*100, 2)}%, RSI: {rsi}')
 
         if (profit > 0 and rsi >= RSIStrategy.SELL_VALUE) or profit > 0.15:
             return self.follow_up(buy, profit)
         elif profit <= RSIStrategy.PANIC_VALUE:
             return True, buy
         elif profit <= dca:
-            logging.info(f'profit: {round(profit*100, 2)}%, RSI: {rsi}')
-            logging.info('go dca')
+            logger.info(f'profit: {round(profit*100, 2)}%, RSI: {rsi}')
+            logger.info('go dca')
             opt, sell = self.follow_down(
                 sell, isdca=True, strategy=self.buy_strategy)
             if opt:
@@ -178,7 +179,7 @@ class Monitor(object):
     def check_buy(self, ticker, kline):
         strategy_value = self.buy_strategy(kline)
 
-        logging.debug(f'{self.market} RSI: {strategy_value}')
+        logger.debug(f'{self.market} RSI: {strategy_value}')
         if strategy_value <= RSIStrategy.BUY_VALUE:
             return self.follow_down(ticker['ticker']['sell'],
                                     strategy=self.buy_strategy)
@@ -187,7 +188,7 @@ class Monitor(object):
         # return True, float(ticker['ticker']['sell'])
 
     def buy(self, price, isdca=False):
-        logging.info('go_buy')
+        logger.info('go_buy')
         amount = 0
         if isdca:
             amount = (self.repo['avg_price'] * self.repo['count']) / price
@@ -212,15 +213,15 @@ class Monitor(object):
         if amount == 0:
             return
 
-        logging.info(f'buy_price:    {price}')
-        logging.info(f'buy_amount:   {amount}')
+        logger.info(f'buy_price:    {price}')
+        logger.info(f'buy_amount:   {amount}')
 
         order = self.api.order(self.market, price, amount, 1)
         time.sleep(60)
-        logging.info(f'order:        {str(order)}')
+        logger.info(f'order:        {str(order)}')
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
-            logging.info(f'order_detail: {str(order_detail)}')
+            logger.info(f'order_detail: {str(order_detail)}')
             if order_detail['status'] == 2:
                 if isdca is False:
                     self.repo['count'] += order_detail['total_amount']
@@ -244,8 +245,8 @@ class Monitor(object):
                     rate=self.repo['avg_price'],
                     trade_money=order_detail['trade_money']
                 )
-                logging.info(text)
-                logging.info(f'{self.market} repo: {self.repo}')
+                logger.info(text)
+                logger.info(f'{self.market} repo: {self.repo}')
                 time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
@@ -255,18 +256,18 @@ class Monitor(object):
                 self.balance -= order_detail['trade_money']
                 price = self.api.get_ticker['sell']
                 self.sell(price=price)
-            logging.info(f'{self.market} repo: {self.repo}')
+            logger.info(f'{self.market} repo: {self.repo}')
 
     def sell(self, price):
         amount = self.repo['count'] * 0.998
-        logging.info(f'sell_price:   {price}')
-        logging.info(f'sell_amount:  {amount}')
+        logger.info(f'sell_price:   {price}')
+        logger.info(f'sell_amount:  {amount}')
         order = self.api.order(self.market, price, amount, 0)
-        logging.info(f'order:        {str(order)}')
+        logger.info(f'order:        {str(order)}')
         time.sleep(60)
         if order['code'] == 1000:
             order_detail = self.api.get_order(self.market, order['id'])
-            logging.info(f'order_detail: {order_detail}')
+            logger.info(f'order_detail: {order_detail}')
             if order_detail['status'] == 2:
                 self.status = 0
                 profit = util.calculate_profit(
@@ -276,10 +277,10 @@ class Monitor(object):
 
                 # update local balance
                 change = profit * self.repo['count'] * self.repo['avg_price']
-                logging.info(f'change:       {change}')
+                logger.info(f'change:       {change}')
                 self.update_local_balance(self.lock, change)
-                logging.info(f'update local_balance with {change}')
-                logging.info(
+                logger.info(f'update local_balance with {change}')
+                logger.info(
                     f'local_balance is {self.get_local_balance(self.lock)}')
 
                 self.repo = util.init_repo()
@@ -292,8 +293,8 @@ class Monitor(object):
                     rate=order_detail['avg_price'],
                     balance=balance
                 )
-                logging.info(text)
-                logging.info(f'balance:      {balance}')
+                logger.info(text)
+                logger.info(f'balance:      {balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
 
                 if profit > 0:
@@ -317,7 +318,7 @@ class Monitor(object):
                 self.watch()
                 time.sleep(WAIT_TIME)
             except Exception as e:
-                logging.error(str(e))
+                logger.error(str(e))
                 time.sleep(WAIT_TIME)
 
 
