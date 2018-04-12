@@ -237,12 +237,14 @@ class Monitor(object):
                     self.repo['avg_price'] = total_cost / self.repo['count']
                     self.repo['dca'] += 1
                 self.status = 1
-                gram.send_trade_message(trade_type='buy',
-                                        market=self.market_code,
-                                        amaout=self.repo['count'],
-                                        rate=self.repo['avg_price'],
-                                        trade_money=order_detail['trade_money']
-                                        )
+                text = gram.send_trade_message(
+                    trade_type='buy',
+                    market=self.market_code,
+                    amaout=self.repo['count'],
+                    rate=self.repo['avg_price'],
+                    trade_money=order_detail['trade_money']
+                )
+                logging.info(text)
                 logging.info(f'{self.market} repo: {self.repo}')
                 time.sleep(15 * 60)
             elif order_detail['status'] == 0:
@@ -281,14 +283,16 @@ class Monitor(object):
                     f'local_balance is {self.get_local_balance(self.lock)}')
 
                 self.repo = util.init_repo()
-                gram.send_trade_message(trade_type='sell',
-                                        market=self.market_code,
-                                        profit=f'{round(profit*100, 2)}%',
-                                        amaout=order_detail['total_amount'],
-                                        cost=old_repo['avg_price'],
-                                        rate=order_detail['avg_price'],
-                                        balance=balance
-                                        )
+                text = gram.send_trade_message(
+                    trade_type='sell',
+                    market=self.market_code,
+                    profit=f'{round(profit*100, 2)}%',
+                    amaout=order_detail['total_amount'],
+                    cost=old_repo['avg_price'],
+                    rate=order_detail['avg_price'],
+                    balance=balance
+                )
+                logging.info(text)
                 logging.info(f'balance:      {balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
 

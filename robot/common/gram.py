@@ -30,14 +30,15 @@ def send_message(text):
               'text': text,
               'parse_mode': telegram.ParseMode.MARKDOWN
               }
-    # Thread(target=bot.send_message, kwargs=kwargs).start()
-    return bot.send_message(**kwargs)
+    Thread(target=bot.send_message, kwargs=kwargs).start()
+    # return bot.send_message(**kwargs)
 
 
 def send_trade_message(trade_type='sell', **kwargs):
     template = template_sell if trade_type == 'sell' else template_buy
     text = template.format_map(kwargs)
     send_message(text)
+    return text
 
 
 if __name__ == '__main__':
