@@ -275,14 +275,6 @@ class Monitor(object):
                 balance = self.api.get_balance()
                 old_repo = self.repo
 
-                # update local balance
-                change = profit * self.repo['count'] * self.repo['avg_price']
-                logger.info(f'change:       {change}')
-                self.update_local_balance(self.lock, change)
-                logger.info(f'update local_balance with {change}')
-                logger.info(
-                    f'local_balance is {self.get_local_balance(self.lock)}')
-
                 self.repo = util.init_repo()
                 text = gram.send_trade_message(
                     trade_type='sell',
@@ -293,6 +285,7 @@ class Monitor(object):
                     rate=order_detail['avg_price'],
                     balance=balance
                 )
+
                 logger.info(text)
                 logger.info(f'balance:      {balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
@@ -302,6 +295,18 @@ class Monitor(object):
                     self.is_loss = False
                 else:
                     self.is_loss = True
+
+                # update local balance
+                change = (profit *
+                          self.old_repo['count'] *
+                          self.old_repo['avg_price'])
+                logger.info(f'change:       {change}')
+                self.update_local_balance(self.lock, change)
+                logger.info(
+                    f'update local_balance with {change}')
+                logger.info(
+                    f'local_balance is {self.get_local_balance(self.lock)}')
+
                 # time.sleep(15 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
