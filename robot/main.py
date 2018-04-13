@@ -26,7 +26,6 @@ def update_local_balance(lock, change):
         global balance
         logger.debug(f'balance: {balance}, change: {change}')
         balance += change
-        lock.release()
     except Exception as e:
         logger.error(str(e))
     finally:
