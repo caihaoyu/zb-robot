@@ -317,7 +317,7 @@ class Monitor(object):
                                         )
                 print(f'balance={balance}')
                 self.balance = balance
-                # time.sleep(15 * 60)
+                time.sleep(24 * 60 * 60)
             elif order_detail['status'] == 0:
                 self.api.cancel_order(self.market, order['id'])
             else:
@@ -326,7 +326,7 @@ class Monitor(object):
                 self.repo['count'] -= order_detail['deal_amount']
                 price = self.api.get_ticker['buy']
                 self.sell(price=price)
-            time.sleep(24 * 60 * 60)
+
 
 
 if __name__ == '__main__':
