@@ -124,7 +124,7 @@ class Monitor(object):
         else:
             self.repo = repo
             self.status = 1
-        self.balance = 100
+        self.balance = self.api.get_balance()
         self.is_loss = False
         # self.balance = 10
 
@@ -326,7 +326,6 @@ class Monitor(object):
                 self.repo['count'] -= order_detail['deal_amount']
                 price = self.api.get_ticker['buy']
                 self.sell(price=price)
-
 
 
 if __name__ == '__main__':
