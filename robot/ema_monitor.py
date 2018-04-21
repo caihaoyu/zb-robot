@@ -257,19 +257,11 @@ class Monitor(object):
             order_detail = self.api.get_order(self.market, order['id'])
             print(order_detail)
             if order_detail['status'] == 2:
-                if isdca is False:
-                    self.repo['count'] += order_detail['total_amount']
-                    if 'avg_price' in order_detail:
-                        self.repo['avg_price'] = float(
-                            order_detail['avg_price'])
-                    else:
-                        self.repo['avg_price'] = float(
-                            order_detail['trade_money']) / self.repo['count']
-                else:
-                    last_cost = self.repo['avg_price'] * self.repo['count']
-                    total_cost = float(order_detail['trade_money']) + last_cost
-                    self.repo['count'] += order_detail['total_amount']
-                    self.repo['avg_price'] = total_cost / self.repo['count']
+                last_cost = self.repo['avg_price'] * self.repo['count']
+                total_cost = float(order_detail['trade_money']) + last_cost
+                self.repo['count'] += order_detail['total_amount']
+                self.repo['avg_price'] = total_cost / self.repo['count']
+                if isdca:
                     self.repo['dca'] += 1
                 self.status = 1
                 gram.send_trade_message(trade_type='buy',
@@ -285,9 +277,13 @@ class Monitor(object):
             else:
                 self.api.cancel_order(self.market, order['id'])
                 order_detail = self.api.get_order(self.market, order['id'])
+                last_cost = self.repo['avg_price'] * self.repo['count']
+                total_cost = float(order_detail['trade_money']) + last_cost
+                self.repo['count'] += order_detail['total_amount']
+                self.repo['avg_price'] = total_cost / self.repo['count']
                 self.balance -= order_detail['trade_money']
                 price = self.api.get_ticker['sell']
-                self.sell(price=price)
+                self.buy(price=price)
             print(self.repo)
 
     def sell(self, price):
@@ -330,6 +326,7 @@ class Monitor(object):
 
 if __name__ == '__main__':
     import traceback
+    # repo = {'count': 0.76385039, 'avg_price': 8321.3018, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
