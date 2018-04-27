@@ -1,47 +1,11 @@
 import argparse
-from robot.common.logging import logger
 import threading
-from threading import Lock
 
-import robot.env
-from robot.env import balance
 from robot.monitor.monitor import Monitor
 
 
-def get_local_balance(lock):
-    try:
-        if lock.acquire(blocking=False):
-            global balance
-            return balance
-        return False
-    except Exception as e:
-        logger.error(str(e))
-    finally:
-        lock.release()
-
-
-def update_local_balance(lock, change):
-    try:
-        lock.acquire(blocking=True)
-        global balance
-        logger.debug(f'balance: {balance}, change: {change}')
-        balance += change
-    except Exception as e:
-        logger.error(str(e))
-    finally:
-        lock.release()
-
-
-def run_monitor(symbol,
-                balance,
-                lock,
-                get_local_balance,
-                update_local_balance):
-    monitor = Monitor(market=symbol,
-                      lock=lock,
-                      balance=balance,
-                      get_local_balance=get_local_balance,
-                      update_local_balance=update_local_balance)
+def run_monitor(symbol):
+    monitor = Monitor(market=symbol)
     monitor.run()
 
 
@@ -55,22 +19,16 @@ def parse_args():
 
 
 def main():
-    symbols = ['ltc_usdt', 'etc_usdt', 'bch_usdt']
+    symbols = ['bch_usdt', 'eos_usdt', 'ont_usdt', 'okb_usdt']
 
     threads = []
-    lock = Lock()
 
     for symbol in symbols:
         thread = threading.Thread(
             target=run_monitor,
             name=symbol,
-            kwargs={
-                'symbol': symbol,
-                'lock': lock,
-                'balance': balance,
-                'get_local_balance': get_local_balance,
-                'update_local_balance': update_local_balance,
-            })
+            kwargs={'symbol': symbol}
+        )
 
         threads.append(thread)
 

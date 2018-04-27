@@ -35,11 +35,7 @@ class Monitor(object):
                  market,
                  buy_strategy='rsi',
                  sell_strategy='',
-                 repo=None,
-                 lock=None,
-                 balance=None,
-                 get_local_balance=None,
-                 update_local_balance=None):
+                 repo=None):
         self.market = market
         self.market_code = self.market.replace('_', '').upper()
         self.buy_strategy = BUY_STRATEGY_MAP[buy_strategy]
@@ -55,11 +51,6 @@ class Monitor(object):
             self.status = 1
         self.balance = self.api.get_balance() * 0.5
         self.is_loss = False
-
-        self.lock = lock
-        self.local_balance = balance
-        self.get_local_balance = get_local_balance
-        self.update_local_balance = update_local_balance
 
     def watch(self):
         kline = self.api.get_kline(market=self.market, time_range="15min")
@@ -189,28 +180,36 @@ class Monitor(object):
 
     def buy(self, price, isdca=False):
         logger.info('go_buy')
-        amount = 0
-        if isdca:
-            amount = (self.repo['avg_price'] * self.repo['count']) / price
-        else:
-            for _ in range(5):
-                local_balance = self.get_local_balance(self.lock)
-                if local_balance:
-                    self.local_balance = local_balance
-                    online_balance = self.api.get_balance()
-                    if online_balance > local_balance * 0.55:
-                        radio = 2 if self.is_loss else 1
-                        amount = min(self.local_balance * radio * 0.25,
-                                     online_balance)
-                        amount = float(amount) / price
-                    else:
-                        gram.send_message(
-                            f'Not enough money to buy {self.market}')
-                    break
-            else:
-                return
+        # amount = 0
+        # if isdca:
+        #     amount = (self.repo['avg_price'] * self.repo['count']) / price
+        # else:
+        #     for _ in range(5):
+        #         local_balance = self.get_local_balance(self.lock)
+        #         if local_balance:
+        #             self.local_balance = local_balance
+        #             online_balance = self.api.get_balance()
+        #             if online_balance > local_balance * 0.55:
+        #                 radio = 2 if self.is_loss else 1
+        #                 amount = min(self.local_balance * radio * 0.25,
+        #                              online_balance)
+        #                 amount = float(amount) / price
+        #             else:
+        #                 gram.send_message(
+        #                     f'Not enough money to buy {self.market}')
+        #             break
+        #     else:
+        #         return
 
-        if amount == 0:
+        # if amount == 0:
+        #     return
+        amount = 30
+        balance = self.api.get_balance()
+        if balance < amount:
+            gram.send_message(
+                f'Not enough money to buy {self.market}\n'
+                f'Current balance {balance}'
+            )
             return
 
         logger.info(f'buy_price:    {price}')
