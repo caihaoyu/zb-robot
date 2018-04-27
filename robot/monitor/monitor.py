@@ -180,29 +180,6 @@ class Monitor(object):
 
     def buy(self, price, isdca=False):
         logger.info('go_buy')
-        # amount = 0
-        # if isdca:
-        #     amount = (self.repo['avg_price'] * self.repo['count']) / price
-        # else:
-        #     for _ in range(5):
-        #         local_balance = self.get_local_balance(self.lock)
-        #         if local_balance:
-        #             self.local_balance = local_balance
-        #             online_balance = self.api.get_balance()
-        #             if online_balance > local_balance * 0.55:
-        #                 radio = 2 if self.is_loss else 1
-        #                 amount = min(self.local_balance * radio * 0.25,
-        #                              online_balance)
-        #                 amount = float(amount) / price
-        #             else:
-        #                 gram.send_message(
-        #                     f'Not enough money to buy {self.market}')
-        #             break
-        #     else:
-        #         return
-
-        # if amount == 0:
-        #     return
         amount = 30
         balance = self.api.get_balance()
         if balance < amount:
@@ -275,7 +252,7 @@ class Monitor(object):
                 old_repo = self.repo
 
                 self.repo = util.init_repo()
-                text = gram.send_trade_message(
+                gram.send_trade_message(
                     trade_type='sell',
                     market=self.market_code,
                     profit=f'{round(profit*100, 2)}%',
@@ -285,8 +262,6 @@ class Monitor(object):
                     balance=balance
                 )
 
-                logger.info(text)
-                logger.info(f'balance:      {balance}')
                 self.balance = balance if self.is_loss else balance * 0.5
 
                 if profit > 0:
@@ -294,17 +269,6 @@ class Monitor(object):
                     self.is_loss = False
                 else:
                     self.is_loss = True
-
-                # update local balance
-                change = (profit *
-                          self.old_repo['count'] *
-                          self.old_repo['avg_price'])
-                logger.info(f'change:       {change}')
-                self.update_local_balance(self.lock, change)
-                logger.info(
-                    f'update local_balance with {change}')
-                logger.info(
-                    f'local_balance is {self.get_local_balance(self.lock)}')
 
                 # time.sleep(15 * 60)
             elif order_detail['status'] == 0:
