@@ -6,6 +6,7 @@ import numpy as np
 # from robot.api.zb_api import ZBAPI
 from robot.api.okex_api import OKAPI
 from robot.util import gram
+# from robot.strategy import RSIStrategy
 
 # # 每次购买的比例
 # TRADING_PAIRS = 10
@@ -72,7 +73,7 @@ def calculate_sell(kline):
     ema, macd = EMA_MACD(kline)
     if ema is None or macd is None:
         return False
-    if ema[-2] - ema[-3] < 0:
+    if ema[-2] - ema[-3] * 0.995 < 0:
         return True
     return False
 
@@ -326,7 +327,7 @@ class Monitor(object):
 
 if __name__ == '__main__':
     import traceback
-    # repo = {'count': 0.76385039, 'avg_price': 8321.3018, 'dca': 0}
+    # repo = {'count': 0.70751290, 'avg_price': 8980, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
