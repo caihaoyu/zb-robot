@@ -55,7 +55,7 @@ def EMA_MACD(kline=None):
     kline_data = [float(item[4]) for item in kline['data']]
     # print(kline_data)
     closes = np.array(kline_data)
-    macd = talib.MACD(closes, fastperiod=6, slowperiod=12, signalperiod=9)
+    macd = talib.MACD(closes, fastperiod=12, slowperiod=26, signalperiod=9)
     ema = talib.EMA(closes, timeperiod=5)
     return ema, macd
 
