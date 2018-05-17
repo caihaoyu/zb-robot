@@ -26,7 +26,7 @@ BUY_VALUE = 28.25
 # 卖出利润
 SELL_VALUE = 50
 
-PANIC_VALUE = -5 / 100
+PANIC_VALUE = -3 / 100
 
 WAIT_TIME = 10
 
@@ -327,7 +327,7 @@ class Monitor(object):
 
 if __name__ == '__main__':
     import traceback
-    # repo = {'count': 0.70751290, 'avg_price': 8980, 'dca': 0}
+    # repo = {'count': 8.594040, 'avg_price': 765.7943, 'dca': 0}
     repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
