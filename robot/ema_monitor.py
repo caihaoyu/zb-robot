@@ -280,7 +280,8 @@ class Monitor(object):
                 order_detail = self.api.get_order(self.market, order['id'])
                 last_cost = self.repo['avg_price'] * self.repo['count']
                 total_cost = float(order_detail['trade_money']) + last_cost
-                self.repo['count'] += order_detail['total_amount']
+                # 这个地方需要计算成交的值
+                self.repo['count'] += order_detail['deal_amount']
                 self.repo['avg_price'] = total_cost / self.repo['count']
                 self.balance -= order_detail['trade_money']
                 price = self.api.get_ticker['sell']
