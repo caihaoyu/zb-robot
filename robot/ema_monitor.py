@@ -328,8 +328,8 @@ class Monitor(object):
 
 if __name__ == '__main__':
     import traceback
-    repo = {'count': 1.75507759, 'avg_price': 6229, 'dca': 0}
-    # repo = None
+    # repo = {'count': 1.75507759, 'avg_price': 6229, 'dca': 0}
+    repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
     while True:
