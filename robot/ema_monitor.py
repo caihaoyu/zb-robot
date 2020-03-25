@@ -53,7 +53,6 @@ def EMA_MACD(kline=None):
     if len(kline['data']) < 20:
         return None, None
     kline_data = [float(item[4]) for item in kline['data']]
-    # print(kline_data)
     closes = np.array(kline_data)
     macd = talib.MACD(closes, fastperiod=12, slowperiod=26, signalperiod=9)
     ema = talib.EMA(closes, timeperiod=5)
@@ -118,6 +117,7 @@ class Monitor(object):
         self.sell_strategy = sell_strategy
         self.api = OKAPI(os.environ['OK_ACCESS_KEY'],
                          os.environ['OK_SERECT_KEY'],
+                         os.environ['OK_PASSPHRASE'],
                          market)
         if repo is None:
             self.repo = init_repo()
@@ -328,8 +328,8 @@ class Monitor(object):
 
 if __name__ == '__main__':
     import traceback
-    # repo = {'count': 8.594040, 'avg_price': 765.7943, 'dca': 0}
-    repo = None
+    repo = {'count': 1.75507759, 'avg_price': 6229, 'dca': 0}
+    # repo = None
     monitor = Monitor('btc_usdt', 'rsi', '', repo)
 
     while True:
