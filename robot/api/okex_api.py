@@ -49,7 +49,7 @@ class OKAPI(IAPI):
         return result
 
     def order(self, currency, price, amount, trade_type):
-        # trade_type = 'buy' if trade_type == 1 else 'sell'
+        trade_type = 'buy' if trade_type == 1 else 'sell'
         price, amount = str(price), str(amount)
         result = self.client.take_order(
             'btc_usdt', trade_type, client_oid='',
