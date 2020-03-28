@@ -65,10 +65,10 @@ class OKAPI(IAPI):
     def get_order(self, currency, order_id):
         detail = self.client.get_order_info(currency, order_id)
         trade_money = float(detail['price_avg']) * float(detail['filled_size'])
-        result = {'status': detail['state'],
-                  'deal_amount': detail['filled_size'],
-                  'total_amount': detail['size'],
-                  'avg_price': detail['price_avg'],
+        result = {'status': int(detail['state']),
+                  'deal_amount': float(detail['filled_size']),
+                  'total_amount': float(detail['size']),
+                  'avg_price': float(detail['price_avg']),
                   'trade_money': trade_money
                   }
         return result
