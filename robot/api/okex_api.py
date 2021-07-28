@@ -49,9 +49,10 @@ class OKAPI(IAPI):
             }
         }
         '''
-        api_respnse = self.client.get_specific_ticker(market)
+        api_respnse = self.market_client.get_ticker(market)['data'][0]
+        print(api_respnse)
         result = {'ticker': {
-            'buy': api_respnse['best_ask'], 'sell': api_respnse['best_bid']}}
+            'buy': api_respnse['askPx'], 'sell': api_respnse['bidPx']}}
         return result
 
     def order(self, currency, price, amount, trade_type):
@@ -94,6 +95,7 @@ if __name__ == '__main__':
     # print(api.cancel_order('btc_usdt', '4611768738255873'))
     print(api.get_balance())
     print(api.get_kline('BTC-USDT'))
+    print(api.get_ticker('BTC-USDT'))
 
     # print(api.get_order('btc_usdt', '4603346987586560'))
     # order = api.order('btc_usdt', 19000, 0.007907386422415348, 0)
