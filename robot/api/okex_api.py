@@ -1,6 +1,7 @@
 from .base_api import IAPI
 from ..okex.spot_api import SpotAPI
 from ..okex.Account_api import AccountAPI
+from ..okex.Market_api import MarketAPI
 import os
 
 
@@ -12,20 +13,24 @@ class OKAPI(IAPI):
         self.market = market
         self.passphrase = passphrase
 
-        self.client = AccountAPI(self.mykey, self.mysecret,
-                                 self.passphrase, False)
+        self.account_client = AccountAPI(self.mykey, self.mysecret,
+                                         self.passphrase, False)
+
+        self.market_client = MarketAPI(self.mykey, self.mysecret,
+                                       self.passphrase, False)
 
     def query_account(self):
         pass
 
-    def get_balance(self, name='usdt'):
-        result = self.client.get_account(name)
-        return float(result['balance'])
+    def get_balance(self, name='USDT'):
+        result = self.account_client.get_account(name)
+        # print(result['data'][0].get('details')[0].get('cashBal'))
+        return float(result['data'][0].get('details')[0].get('cashBal'))
 
-    def get_kline(self, market, time_range=86400):
+    def get_kline(self, market, time_range='1D'):
         # 先写死一天
-        time_range = 86400
-        kline = self.client.get_kline(market, time_range)
+        time_range = '1D'
+        kline = self.market_client.get_markprice_candlesticks(market, bar=time_range)
         return {'data': kline[::-1]}
 
     def get_ticker(self, market):
@@ -84,11 +89,12 @@ if __name__ == '__main__':
 
     # print(api.get_ticker('btc_usdt'))
     # print(api.order('btc_usdt', 0.1, 1, 'buy'))
-    # print(api.cancel_order('btc_usdt', '4611768738255873'))
-    # print(api.get_kline('btc_usdt'))
-    account = api.query_account()
 
+    account = api.query_account()
+    # print(api.cancel_order('btc_usdt', '4611768738255873'))
     print(api.get_balance())
+    print(api.get_kline('BTC-USD-SWAP'))
+
     # print(api.get_order('btc_usdt', '4603346987586560'))
     # order = api.order('btc_usdt', 19000, 0.007907386422415348, 0)
     # print(order['order_id'])

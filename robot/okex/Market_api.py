@@ -4,7 +4,7 @@ from .consts import *
 
 class MarketAPI(Client):
 
-    def __init__(self, api_key, api_secret_key, passphrase, use_server_time=False, flag='1'):
+    def __init__(self, api_key, api_secret_key, passphrase, use_server_time=False, flag='0'):
         Client.__init__(self, api_key, api_secret_key, passphrase, use_server_time, flag)
 
     # Get Tickers
@@ -48,6 +48,7 @@ class MarketAPI(Client):
     # Get Mark Price Candlesticks
     def get_markprice_candlesticks(self, instId, after=None, before=None, bar=None, limit=None):
         params = {'instId': instId, 'after': after, 'before': before, 'bar': bar, 'limit': limit}
+        print(params)
         return self._request_with_params(GET, MARKPRICE_CANDLES, params)
 
     # Get Index Candlesticks
