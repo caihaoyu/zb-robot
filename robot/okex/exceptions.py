@@ -1,27 +1,22 @@
 # coding=utf-8
-import logging
 
 
 class OkexAPIException(Exception):
 
     def __init__(self, response):
-        # print(response.text + ', ' + str(response.status_code))
-        logging.error("result:" + response.text + str(response.status_code))
+        print(response.text + ', ' + str(response.status_code))
         self.code = 0
         try:
             json_res = response.json()
         except ValueError:
             self.message = 'Invalid JSON error message from Okex: {}'.format(response.text)
         else:
-            if "code" in json_res.keys() and "message" in json_res.keys():
+            if "code" in json_res.keys() and "msg" in json_res.keys():
                 self.code = json_res['code']
-                self.message = json_res['message']
-            elif "error_code" in json_res.keys() and "error_message" in json_res.keys():
-                self.code = json_res['error_code']
-                self.message = json_res['error_message']
+                self.message = json_res['msg']
             else:
-                self.code = 'Please wait a moment'
-                self.message = 'Maybe something is wrong'
+                self.code = 'None'
+                self.message = 'System error'
 
         self.status_code = response.status_code
         self.response = response

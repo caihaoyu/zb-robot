@@ -1,5 +1,6 @@
 from .base_api import IAPI
 from ..okex.spot_api import SpotAPI
+from ..okex.Account_api import AccountAPI
 import os
 
 
@@ -11,14 +12,14 @@ class OKAPI(IAPI):
         self.market = market
         self.passphrase = passphrase
 
-        self.client = SpotAPI(self.mykey, self.mysecret,
-                              self.passphrase, False)
+        self.client = AccountAPI(self.mykey, self.mysecret,
+                                 self.passphrase, False)
 
     def query_account(self):
         pass
 
     def get_balance(self, name='usdt'):
-        result = self.client.get_coin_account_info(name)
+        result = self.client.get_account(name)
         return float(result['balance'])
 
     def get_kline(self, market, time_range=86400):
@@ -75,6 +76,7 @@ class OKAPI(IAPI):
 
 
 if __name__ == '__main__':
+    print(os.environ['OK_ACCESS_KEY'])
 
     api = OKAPI(os.environ['OK_ACCESS_KEY'],
                 os.environ['OK_SERECT_KEY'],
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     # print(api.order('btc_usdt', 0.1, 1, 'buy'))
     # print(api.cancel_order('btc_usdt', '4611768738255873'))
     # print(api.get_kline('btc_usdt'))
-    # account = api.query_account()
+    account = api.query_account()
 
     print(api.get_balance())
     # print(api.get_order('btc_usdt', '4603346987586560'))
