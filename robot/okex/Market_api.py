@@ -47,6 +47,17 @@ class MarketAPI(Client):
 
     # Get Mark Price Candlesticks
     def get_markprice_candlesticks(self, instId, after=None, before=None, bar=None, limit=None):
+        if after is None:
+            after = ''
+
+        if before is None:
+            before = ''
+        
+        if bar is None:
+            bar = ''
+            
+        if limit is None:
+            limit = ''
         params = {'instId': instId, 'after': after, 'before': before, 'bar': bar, 'limit': limit}
         print(params)
         return self._request_with_params(GET, MARKPRICE_CANDLES, params)

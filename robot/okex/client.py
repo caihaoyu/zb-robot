@@ -39,6 +39,7 @@ class Client(object):
         # print("body:", body)
 
         if method == c.GET:
+            print(url)
             response = requests.get(url, headers=header)
         elif method == c.POST:
             response = requests.post(url, data=body, headers=header)

@@ -30,8 +30,8 @@ class OKAPI(IAPI):
     def get_kline(self, market, time_range='1D'):
         # 先写死一天
         time_range = '1D'
-        kline = self.market_client.get_markprice_candlesticks(market, bar=time_range)
-        return {'data': kline[::-1]}
+        kline = self.market_client.get_markprice_candlesticks(market,bar=time_range)
+        return kline
 
     def get_ticker(self, market):
         '''
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     account = api.query_account()
     # print(api.cancel_order('btc_usdt', '4611768738255873'))
     print(api.get_balance())
-    print(api.get_kline('BTC-USD-SWAP'))
+    print(api.get_kline('BTC-USDT'))
 
     # print(api.get_order('btc_usdt', '4603346987586560'))
     # order = api.order('btc_usdt', 19000, 0.007907386422415348, 0)
