@@ -5,7 +5,8 @@ from .consts import *
 class MarketAPI(Client):
 
     def __init__(self, api_key, api_secret_key, passphrase, use_server_time=False, flag='0'):
-        Client.__init__(self, api_key, api_secret_key, passphrase, use_server_time, flag)
+        Client.__init__(self, api_key, api_secret_key,
+                        passphrase, use_server_time, flag)
 
     # Get Tickers
     def get_tickers(self, instType, uly=None):
@@ -32,17 +33,20 @@ class MarketAPI(Client):
 
     # Get Candlesticks
     def get_candlesticks(self, instId, after=None, before=None, bar=None, limit=None):
-        params = {'instId': instId, 'after': after, 'before': before, 'bar': bar, 'limit': limit}
+        params = {'instId': instId, 'after': after,
+                  'before': before, 'bar': bar, 'limit': limit}
         return self._request_with_params(GET, MARKET_CANDLES, params)
 
     # GGet Candlesticks History（top currencies only）
     def get_history_candlesticks(self, instId, after=None, before=None, bar=None, limit=None):
-        params = {'instId': instId, 'after': after, 'before': before, 'bar': bar, 'limit': limit}
+        params = {'instId': instId, 'after': after,
+                  'before': before, 'bar': bar, 'limit': limit}
         return self._request_with_params(GET, HISTORY_CANDLES, params)
 
     # Get Index Candlesticks
     def get_index_candlesticks(self, instId, after=None, before=None, bar=None, limit=None):
-        params = {'instId': instId, 'after': after, 'before': before, 'bar': bar, 'limit': limit}
+        params = {'instId': instId, 'after': after,
+                  'before': before, 'bar': bar, 'limit': limit}
         return self._request_with_params(GET, INDEX_CANSLES, params)
 
     # Get Mark Price Candlesticks
@@ -52,14 +56,14 @@ class MarketAPI(Client):
 
         if before is None:
             before = ''
-        
+
         if bar is None:
             bar = ''
-            
+
         if limit is None:
             limit = ''
-        params = {'instId': instId, 'after': after, 'before': before, 'bar': bar, 'limit': limit}
-        print(params)
+        params = {'instId': instId, 'after': after,
+                  'before': before, 'bar': bar, 'limit': limit}
         return self._request_with_params(GET, MARKPRICE_CANDLES, params)
 
     # Get Index Candlesticks
@@ -77,5 +81,6 @@ class MarketAPI(Client):
 
     # Get Tier
     def get_tier(self, instType=None, tdMode=None, uly=None, instId=None, ccy=None, tier=None):
-        params = {'instType': instType, 'tdMode': tdMode, 'uly': uly, 'instId': instId, 'ccy': ccy, 'tier': tier}
+        params = {'instType': instType, 'tdMode': tdMode,
+                  'uly': uly, 'instId': instId, 'ccy': ccy, 'tier': tier}
         return self._request_with_params(GET, TIER, params)

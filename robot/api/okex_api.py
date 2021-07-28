@@ -55,7 +55,6 @@ class OKAPI(IAPI):
         }
         '''
         api_respnse = self.market_client.get_ticker(market)['data'][0]
-        print(api_respnse)
         result = {'ticker': {
             'buy': api_respnse['askPx'], 'sell': api_respnse['bidPx']}}
         return result
@@ -69,7 +68,6 @@ class OKAPI(IAPI):
         #     'btc_usdt', trade_type, client_oid='',
         #     type='limit', price=price, order_type='0',
         #     notional='1', size=amount)
-        print(result)
         result['id'] = result['data'][0]['ordId']
         result['code'] = 1000 if result['code'] == 0 else 500
         return result
