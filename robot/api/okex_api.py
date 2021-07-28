@@ -30,8 +30,8 @@ class OKAPI(IAPI):
     def get_kline(self, market, time_range='1D'):
         # 先写死一天
         time_range = '1D'
-        kline = self.market_client.get_markprice_candlesticks(market,bar=time_range)
-        return kline
+        kline = self.market_client.get_markprice_candlesticks(market,bar=time_range)['data']
+        return {'data': kline[::-1]}
 
     def get_ticker(self, market):
         '''
