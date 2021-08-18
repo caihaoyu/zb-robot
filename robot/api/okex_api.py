@@ -69,6 +69,7 @@ class OKAPI(IAPI):
         #     type='limit', price=price, order_type='0',
         #     notional='1', size=amount)
         result['id'] = result['data'][0]['ordId']
+        result['code'] = result['data'][0]['sCode']
         result['code'] = 1000 if result['code'] == 0 else 500
         return result
 
