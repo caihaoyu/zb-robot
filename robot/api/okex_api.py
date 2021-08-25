@@ -70,7 +70,7 @@ class OKAPI(IAPI):
         #     notional='1', size=amount)
         result['id'] = result['data'][0]['ordId']
         result['code'] = result['data'][0]['sCode']
-        result['code'] = 1000 if result['code'] == 0 else 500
+        result['code'] = 1000 if result['code'] == '0' else 500
         return result
 
     def cancel_order(self, currency, order_id):
@@ -97,6 +97,7 @@ class OKAPI(IAPI):
                   'avg_price': float(detail['avgPx']),
                   'trade_money': trade_money
                   }
+        print(result)
         return result
 
 
@@ -115,7 +116,7 @@ if __name__ == '__main__':
     print(api.get_balance())
     # print(api.get_kline('BTC-USDT'))
     # print(api.get_ticker('BTC-USDT'))
-    # print(api.order('btc_usdt', 0.1, 1, 'buy'))
+    print(api.order('btc_usdt', 0.1, 1, 'buy'))
 
     # print(api.get_order('btc_usdt', '4603346987586560'))
     # order = api.order('btc_usdt', 19000, 0.007907386422415348, 0)
