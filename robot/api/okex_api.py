@@ -92,7 +92,7 @@ class OKAPI(IAPI):
             detail['state'] = 1
 
         result = {'status': int(detail['state']),
-                  'deal_amount': float(detail['fillSz']),
+                  'deal_amount': float(detail['accFillSz']),
                   'total_amount': float(detail['sz']),
                   'avg_price': float(detail['avgPx']),
                   'trade_money': trade_money
