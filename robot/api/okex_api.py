@@ -83,7 +83,7 @@ class OKAPI(IAPI):
         if detail['avgPx'] == '':
             detail['avgPx'] = 0
         # detail = self.client.get_order_info(currency, order_id)
-        trade_money = float(detail['avgPx']) * float(detail['fillSz'])
+        trade_money = float(detail['avgPx']) * float(detail['accFillSz'])
         if detail['state'] == 'live':
             detail['state'] = 0
         if detail['state'] == 'filled':
