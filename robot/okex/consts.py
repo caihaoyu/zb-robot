@@ -1,5 +1,5 @@
 # http header
-API_URL = 'https://www.okex.com'
+API_URL = 'https://www.okx.com'
 
 CONTENT_TYPE = 'Content-Type'
 OK_ACCESS_KEY = 'OK-ACCESS-KEY'
@@ -19,7 +19,7 @@ POST = "POST"
 SERVER_TIMESTAMP_URL = '/api/v5/public/time'
 
 # account
-POSITION_RISK='/api/v5/account/account-position-risk'
+POSITION_RISK = '/api/v5/account/account-position-risk'
 ACCOUNT_INFO = '/api/v5/account/balance'
 POSITION_INFO = '/api/v5/account/positions'
 BILLS_DETAIL = '/api/v5/account/bills'
